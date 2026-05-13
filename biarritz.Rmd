@@ -1,0 +1,16 @@
+---
+title: "Analyse Biarritz"
+output: html_document
+---
+
+## Présentation
+
+Biarritz est une ville moyenne avec une forte attractivité touristique.
+
+## Analyse en cours
+
+Les cartes et analyses SIG seront ajoutées prochainement.
+
+## Objectif
+
+Étudier les inégalités centre / périphérie sur le territoire.

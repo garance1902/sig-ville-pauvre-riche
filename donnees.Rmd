@@ -1,0 +1,26 @@
+---
+title: "Données"
+output: html_document
+---
+
+## Origine des données
+
+Ce projet utilise plusieurs sources de données géographiques et socio-économiques.
+
+## OFGL
+
+Les données de l’OFGL (Observatoire des Finances et de la Gestion publique Locale) permettent d’analyser les ressources financières des communes.
+
+## Filosofi (INSEE)
+
+Les données Filosofi permettent d’étudier les revenus, la pauvreté et les inégalités socio-économiques.
+
+## Communes étudiées
+
+Les communes analysées sont :
+- Biarritz
+- Bordeaux
+
+## Données spatiales
+
+Le projet utilise également des données géographiques communales ainsi que des carreaux de 200m pour une analyse fine des disparités.

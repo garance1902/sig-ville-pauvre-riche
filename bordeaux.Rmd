@@ -1,0 +1,16 @@
+---
+title: "Analyse Bordeaux"
+output: html_document
+---
+
+## Présentation
+
+Bordeaux est une grande métropole marquée par de fortes inégalités internes.
+
+## Analyse en cours
+
+Les traitements SIG seront ajoutés prochainement.
+
+## Objectif
+
+Comprendre les contrastes centre / périphérie.

@@ -1,0 +1,36 @@
+---
+title: "Jointures de données"
+output: html_document
+---
+
+## Objectif
+
+Les jointures permettent de combiner les données socio-économiques et les données géographiques.
+
+---
+
+## Données utilisées
+
+- OFGL
+- Filosofi
+- communes (INSEE)
+
+---
+
+## Traitements réalisés
+
+- jointure par code INSEE
+- association données revenus / communes
+- préparation des analyses spatiales
+
+---
+
+## Code (exemple)
+
+```r
+library(dplyr)
+
+communes <- read.csv("communes.csv")
+revenus <- read.csv("revenus.csv")
+
+data <- merge(communes, revenus, by = "code_insee")

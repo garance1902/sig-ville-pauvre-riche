@@ -1,0 +1,22 @@
+---
+title: "Méthodologie SIG"
+output: html_document
+---
+
+## Géotraitements vecteurs
+
+Les traitements vectoriels permettent d’analyser les communes étudiées et leurs structures spatiales.
+
+Les principales opérations réalisées sont :
+- sélection des communes
+- filtrage spatial
+- comparaison centre / périphérie
+- jointures attributaires
+
+## Géotraitements rasters
+
+Les traitements raster utilisent les carreaux de 200m afin d’observer les inégalités à une échelle plus fine.
+
+## Jointures de données
+
+Les données socio-économiques (Filosofi, OFGL) sont associées aux données géographiques grâce aux codes INSEE.

@@ -1,0 +1,33 @@
+---
+title: "GT Rasters - Carreaux 200m"
+output: html_document
+---
+
+## Objectif
+
+Les traitements raster permettent d’analyser les inégalités socio-spatiales à une échelle fine grâce aux carreaux de 200m.
+
+---
+
+## Données utilisées
+
+- Carreaux INSEE 200m
+- Données de revenus (Filosofi)
+
+---
+
+## Traitements réalisés
+
+- lecture des carreaux
+- sélection sur zone d’étude (Biarritz / Bordeaux)
+- analyse des variations de revenus
+- visualisation des disparités spatiales
+
+---
+
+## Code (exemple)
+
+```r
+library(sf)
+
+carreaux <- st_read("carreaux_200m.gpkg")

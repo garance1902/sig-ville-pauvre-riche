@@ -1,0 +1,24 @@
+---
+title: "GT Vecteurs"
+output: html_document
+---
+
+## Objectif
+
+Les géotraitements vectoriels permettent d’analyser les structures spatiales des communes.
+
+## Traitements réalisés
+
+- sélection des communes
+- filtrage Biarritz / Bordeaux
+- création de zones centre / périphérie
+- intersections spatiales
+
+## Code (exemple)
+
+```r
+library(sf)
+
+communes <- st_read("communes.gpkg")
+
+biarritz <- communes[communes$NOM == "Biarritz", ]

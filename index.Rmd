@@ -1,0 +1,61 @@
+---
+title: "Projet SIG - Inégalités socio-spatiales : Biarritz / Bordeaux"
+output: html_document
+---
+
+## Introduction
+
+Ce projet de Système d’Information Géographique (SIG) analyse les inégalités socio-spatiales entre deux villes françaises : Biarritz et Bordeaux.
+
+L’objectif est de comprendre comment les disparités de revenus et d’accès aux ressources s’organisent dans l’espace urbain.
+
+---
+
+## Problématique
+
+Comment les dynamiques de centre / périphérie permettent-elles d’expliquer les inégalités socio-économiques entre Biarritz et Bordeaux ?
+
+---
+
+## Données mobilisées
+
+Les analyses reposent sur plusieurs sources de données :
+
+- OFGL : finances et ressources des collectivités locales  
+- Filosofi (INSEE) : revenus et niveaux de vie des ménages  
+- Données communales : limites administratives des territoires  
+- Carreaux 200m : grille fine pour analyser les disparités spatiales  
+
+---
+
+## Méthodologie générale
+
+Le projet repose sur des traitements SIG réalisés sous R :
+
+- Traitements de données vectorielles (communes, limites, sélection spatiale)  
+- Traitements de données raster (carreaux 200m)  
+- Jointures entre données géographiques et socio-économiques  
+- Comparaison entre deux espaces urbains contrastés  
+
+---
+
+## Territoires étudiés
+
+- Biarritz : ville moyenne à forte attractivité touristique  
+- Bordeaux : grande métropole marquée par de fortes inégalités internes  
+
+---
+
+## Organisation du site
+
+- Données  
+- Méthodologie SIG  
+- Analyse de Biarritz  
+- Analyse de Bordeaux  
+- Comparaison des deux villes  
+
+---
+
+## Objectif final
+
+Mettre en évidence les logiques d’inégalités territoriales et comprendre comment elles varient selon les échelles urbaines.

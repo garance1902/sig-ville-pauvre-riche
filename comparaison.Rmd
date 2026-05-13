@@ -1,0 +1,18 @@
+---
+title: "Comparaison Biarritz / Bordeaux"
+output: html_document
+---
+
+## Analyse comparative
+
+Cette page compare les deux territoires étudiés.
+
+## Axes d'analyse
+
+- Structure urbaine
+- Inégalités socio-spatiales
+- Centre / périphérie
+
+## Conclusion
+
+Bordeaux présente une structure plus contrastée que Biarritz.
