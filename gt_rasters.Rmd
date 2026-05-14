@@ -25,9 +25,362 @@ Les traitements raster permettent d’analyser les inégalités socio-spatiales 
 
 ---
 
-## Code (exemple)
+## cartographie
+### découpage des carreaux manquants
 
-```r
 library(sf)
+library(mapsf)
 
-carreaux <- st_read("carreaux_200m.gpkg")
+commune <- st_read("data/communes.gpkg", "communes", quiet=T)
+biarritz <- commune[commune$code == '64122', ]
+
+st_crs(car)
+
+biarritz <- st_transform(biarritz, st_crs(car))
+
+car <- st_read("data/Filosofi.gpkg", "carreaux_200m_met", quiet=T)  
+# ou depuis votre fichier dpt selon ce que vous avez
+
+# Intersection Biarritz - carreaux, puis union
+inter <- st_union(st_intersection(biarritz, car))
+
+mf_map(inter)
+
+# Différence : zones sans carreau
+diff <- st_difference(biarritz, inter)
+
+# Cartographie
+diff$ta_variable[is.na(diff$ta_variable)] <- 0
+colSums(is.na(diff))
+
+class(diff)
+##nettoyage
+diff <- diff[!st_is_empty(diff), ]
+diff <- st_make_valid(diff)
+diff$area <- as.numeric(st_area(diff))
+mf_map(diff, var = "area", type = "choro")
+## rectification
+
+st_intersects(biarritz, car, sparse = FALSE)[1:5,1:5]
+
+class(inter)
+str(inter)
+st_intersection(biarritz, car)
+
+st_crs(biarritz)
+st_crs(car)
+
+nrow(diff)
+summary(diff$area)
+
+diff$area <- st_area(diff)
+mf_map(diff, var = "area")
+
+mf_map(diff)
+
+mf_map(biarritz, add = TRUE, col = NA)
+
+mf_layout("Carreaux manquants sur Biarritz", "Filosofi 2019\nIGN 2026")
+
+###
+library(sf)
+library(terra)
+library(dplyr)
+library(ggplot2)
+library(ggspatial)
+library(patchwork)
+library(cowplot)
+library(scales)
+library(COGiter)
+library(readxl)
+library(readr)
+
+# =============================================================================
+# 1. CHARGEMENT DES DONNÉES
+# =============================================================================
+
+# --- Carreaux INSEE ---
+carreaux <- st_read("data/Filosofi.gpkg", quiet = TRUE) %>%
+  
+st_transform(2154) %>%
+  
+  mutate(
+    taux_pauvrete = ifelse(men > 0, men_pauv / men * 100, NA_real_)
+  )
+
+# --- Communes (COGiter) ---
+communes_fr <- communes_metro_geo
+
+bordeaux_com <- communes_fr %>%
+  filter(DEPCOM == "33063") %>%
+  st_transform(2154)
+
+biarritz_com <- communes_fr %>%
+  filter(DEPCOM == "64122") %>%
+  st_transform(2154)
+
+# --- OFGL : dépenses d'équipement ---
+# Adapter le nom du fichier et des colonnes selon ton export OFGL
+ofgl_raw <- read_csv2("data/ofgl.csv")
+
+names(ofgl_raw)
+
+names(ofgl_raw)[1:10]
+
+# Vérifier les colonnes disponibles avec : names(ofgl_raw)
+#nettoyage des noms
+library(janitor)
+
+ofgl_raw <- ofgl_raw %>%
+  clean_names()
+  
+ofgl_raw <- clean_names(ofgl_raw)
+
+ofgl_raw <- janitor::clean_names(ofgl_raw)
+ls()
+
+# Adapter les noms ci-dessous selon ce que tu vois
+
+ofgl <- ofgl_raw %>%
+  rename(
+    insee          = code_insee_2024_commune,   
+# colonne code INSEE commune → remplacer 1 par le nom exact
+    dep_equipement = agregat,   
+# colonne dépenses équipement → remplacer 2 par le nom exact
+    population     = population_totale    
+# colonne population → remplacer 3 par le nom exact
+  ) %>%
+  mutate(
+    insee          = as.character(insee),
+    dep_equipement = as.numeric(dep_equipement),
+    population     = as.numeric(population),
+    # Dépenses d'équipement par habitant (€/hab) — plus comparable entre communes
+    dep_eq_hab     = ifelse(population > 0, dep_equipement / population, NA_real_)
+  ) %>%
+  select(insee, dep_equipement, population, dep_eq_hab)
+
+# --- Jointure OFGL → géométries communes ---
+communes_ofgl <- communes_fr %>%
+  st_transform(2154) %>%
+  left_join(ofgl, by = c("DEPCOM" = "insee"))
+
+# =============================================================================
+# 2. DÉFINITION DES ZONES D'ÉTUDE (buffer 5 km)
+# =============================================================================
+
+bordeaux_buf <- st_buffer(st_union(bordeaux_com), 5000)
+biarritz_buf <- st_buffer(st_union(biarritz_com), 5000)
+
+# --- Filtrage carreaux ---
+carreaux_bdx <- st_intersection(carreaux, bordeaux_buf)
+carreaux_btz <- st_intersection(carreaux, biarritz_buf)
+
+# --- Filtrage communes OFGL dans les zones ---
+communes_bdx <- st_intersection(communes_ofgl, bordeaux_buf)
+communes_btz <- st_intersection(communes_ofgl, biarritz_buf)
+
+# =============================================================================
+# 3. RASTÉRISATION DES CARREAUX (terra)
+# =============================================================================
+# C'est ici que le géotraitement devient raster :
+# on convertit les polygones carreaux en raster pour algèbre de carte
+
+rasteriser_carreaux <- function(couche_sf, variable, buf, resolution = 200) {
+  template <- rast(
+    ext  = ext(vect(buf)),
+    res  = resolution,
+    crs  = "EPSG:2154"
+  )
+  rasterize(vect(couche_sf), template, field = variable, fun = "mean")
+}
+
+r_bdx_pauv <- rasteriser_carreaux(carreaux_bdx, "taux_pauvrete", bordeaux_buf)
+r_btz_pauv <- rasteriser_carreaux(carreaux_btz, "taux_pauvrete", biarritz_buf)
+
+# Conversion raster → dataframe pour ggplot
+raster_to_df <- function(r) {
+  as.data.frame(r, xy = TRUE) %>%
+    rename(valeur = 3) %>%
+    filter(!is.na(valeur))
+}
+
+df_bdx_pauv <- raster_to_df(r_bdx_pauv)
+df_btz_pauv <- raster_to_df(r_btz_pauv)
+
+# =============================================================================
+# 4. BREAKS ET PALETTES
+# =============================================================================
+
+# Breaks pauvreté (carreaux — fond raster)
+breaks_pauv <- c(0, 5, 10, 20, 35, 100)
+labels_pauv <- c("0–5 %", "5–10 %", "10–20 %", "20–35 %", "> 35 %")
+palette_pauv <- c("#1A9850", "#91CF60", "#FEE08B", "#FC8D59", "#D73027")
+
+discretiser_pauv <- function(df) {
+  df %>%
+    mutate(
+      pauv_classe = cut(valeur, breaks = breaks_pauv,
+                        labels = labels_pauv,
+                        include.lowest = TRUE, right = FALSE)
+    )
+}
+
+df_bdx_pauv <- discretiser_pauv(df_bdx_pauv)
+df_btz_pauv <- discretiser_pauv(df_btz_pauv)
+
+# Breaks dépenses équipement/hab (communes — surcouche vecteur)
+# Calculer les quantiles sur les deux villes ensemble
+all_dep <- c(communes_bdx$dep_eq_hab, communes_btz$dep_eq_hab)
+breaks_dep <- quantile(all_dep, probs = c(0, 0.25, 0.5, 0.75, 1),
+                       na.rm = TRUE)
+
+# =============================================================================
+# 5. FONCTION CARTE SUPERPOSÉE
+# =============================================================================
+
+faire_carte_superposee <- function(df_raster, communes_ville,
+                                   commune_focus, titre, sous_titre) {
+
+  emprise <- st_bbox(st_buffer(st_union(commune_focus), 500))
+
+  ggplot() +
+
+    # --- FOND : carreaux pauvreté (raster converti en df) ---
+    geom_raster(data = df_raster,
+                aes(x = x, y = y, fill = pauv_classe),
+                alpha = 0.85) +
+
+    scale_fill_manual(
+      values   = setNames(palette_pauv, labels_pauv),
+      name     = "Taux de pauvreté (%)\n[carreaux 200m]",
+      na.value = "grey90",
+      drop     = FALSE
+    ) +
+
+    # --- SURCOUCHE : communes colorées par dépenses équipement ---
+    # Nouvelle échelle de couleur pour les communes (contours épais)
+    new_scale_fill() +   # nécessite ggnewscale
+
+    geom_sf(data = communes_ville,
+            aes(fill = dep_eq_hab),
+            color = "white", linewidth = 0.6,
+            alpha = 0.45) +   # transparence pour voir le raster dessous
+
+    scale_fill_distiller(
+      palette  = "Blues",
+      direction = 1,
+      name     = "Dépenses équipement\n(€/habitant) [communes]",
+      na.value = "grey80",
+      labels   = label_number(big.mark = " ", suffix = " €")
+    ) +
+
+    # --- Contour commune principale ---
+    geom_sf(data = commune_focus,
+            fill = NA, color = "black", linewidth = 1) +
+
+    # --- Échelle + nord ---
+    annotation_scale(location = "bl", width_hint = 0.3,
+                     style = "ticks", unit_category = "metric",
+                     text_cex = 0.7) +
+
+    annotation_north_arrow(location = "tr", which_north = "true",
+                           style = north_arrow_minimal(),
+                           height = unit(0.8, "cm"),
+                           width  = unit(0.8, "cm")) +
+
+    coord_sf(
+      xlim = emprise[c(1, 3)],
+      ylim = emprise[c(2, 4)],
+      crs  = 2154
+    ) +
+
+    theme_minimal(base_size = 10) +
+    theme(
+      plot.title       = element_text(face = "bold", size = 11, hjust = 0.5),
+      plot.subtitle    = element_text(size = 8, color = "grey40", hjust = 0.5),
+      legend.position  = "bottom",
+      legend.title     = element_text(face = "bold", size = 8),
+      legend.text      = element_text(size = 7.5),
+      legend.key.width  = unit(0.9, "cm"),
+      legend.key.height = unit(0.35, "cm"),
+      panel.grid.major  = element_line(color = "grey93", linewidth = 0.3),
+      axis.text         = element_text(size = 6, color = "grey55")
+    ) +
+
+    labs(title = titre, subtitle = sous_titre)
+}
+
+# --- Installer ggnewscale si besoin (pour deux fill indépendants) ---
+# install.packages("ggnewscale")
+library(ggnewscale)
+
+# =============================================================================
+# 6. PRODUCTION DES DEUX CARTES
+# =============================================================================
+
+carte_bdx <- faire_carte_superposee(
+  df_raster      = df_bdx_pauv,
+  communes_ville = communes_bdx,
+  commune_focus  = bordeaux_com,
+  titre          = "Bordeaux",
+  sous_titre     = "Taux de pauvreté (carreaux) + dépenses équipement (communes)"
+)
+
+carte_btz <- faire_carte_superposee(
+  df_raster      = df_btz_pauv,
+  communes_ville = communes_btz,
+  commune_focus  = biarritz_com,
+  titre          = "Biarritz",
+  sous_titre     = "Taux de pauvreté (carreaux) + dépenses équipement (communes)"
+)
+
+# =============================================================================
+# 7. ASSEMBLAGE FINAL
+# =============================================================================
+
+titre_global <- ggdraw() +
+  draw_label(
+    "Pauvreté des ménages et dépenses d'équipement communales — Bordeaux & Biarritz",
+    fontface = "bold", size = 13, x = 0.5, hjust = 0.5
+  )
+
+sous_titre_global <- ggdraw() +
+  draw_label(
+    "Superposition raster (carreaux INSEE 200m) et vecteur (communes OFGL)",
+    size = 9, color = "grey40", x = 0.5, hjust = 0.5
+  )
+
+corps <- plot_grid(carte_bdx, carte_btz, ncol = 2)
+
+source_label <- ggdraw() +
+  draw_label(
+    "Sources : INSEE Filosofi 2019 — Carreaux 200m | OFGL Comptes consolidés communes | IGN Admin Express COG 2023\nRéalisation : [Vos noms], 2025",
+    size = 7, color = "grey50", x = 0.02, hjust = 0
+  )
+
+carte_finale <- plot_grid(
+  titre_global,
+  sous_titre_global,
+  corps,
+  source_label,
+  ncol        = 1,
+  rel_heights = c(0.06, 0.04, 1, 0.06)
+)
+
+# =============================================================================
+# 8. AFFICHAGE ET EXPORT
+# =============================================================================
+
+carte_finale
+
+ggsave(
+  filename = "carte_raster_ofgl_pauvrete.png",
+  plot     = carte_finale,
+  width    = 38, height = 24, units = "cm",
+  dpi      = 300, bg = "white"
+)
+
+
+message("✅ Carte exportée : carte_raster_ofgl_pauvrete.png")
+
+
