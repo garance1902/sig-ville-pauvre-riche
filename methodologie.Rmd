@@ -1,22 +1,63 @@
 ---
 title: "Méthodologie SIG"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
 ---
 
-## Géotraitements vecteurs
+## Présentation générale
 
-Les traitements vectoriels permettent d’analyser les communes étudiées et leurs structures spatiales.
+Ce projet s'appuie sur des données géographiques et socio-économiques pour analyser
+les inégalités de revenus entre le centre et la périphérie de **Bordeaux** et **Biarritz**.
+Deux types de géotraitements ont été mobilisés : les traitements **vecteur** et les
+traitements **raster**.
+
+---
+
+## Schéma général des géotraitements
+
+Le schéma suivant présente l'enchaînement des étapes méthodologiques du projet,
+depuis la collecte des données jusqu'à la production des cartes finales.
+
+![](images/schema_gt.jpg.jpg)
+
+---
+
+## Géotraitements vecteur
+
+Les traitements vectoriels portent sur des entités géographiques discrètes
+(polygones de communes, zones tampon) et permettent de structurer l'espace d'étude.
 
 Les principales opérations réalisées sont :
-- sélection des communes
-- filtrage spatial
-- comparaison centre / périphérie
-- jointures attributaires
 
-## Géotraitements rasters
+- **Sélection des communes** de Bordeaux et Biarritz à partir du fichier IGN Admin Express
+- **Filtrage spatial** des communes limitrophes dans un rayon de 5 km
+- **Création de zones tampon** pour délimiter les zones centre / périphérie
+- **Intersections spatiales** entre les couches géographiques
+- **Jointures attributaires** avec les données socio-économiques
 
-Les traitements raster utilisent les carreaux de 200m afin d’observer les inégalités à une échelle plus fine.
+---
+
+## Géotraitements raster
+
+Les traitements raster s'appuient sur les **carreaux INSEE Filosofi de 200m × 200m**,
+qui permettent d'observer les inégalités socio-économiques à une échelle fine,
+indépendamment des découpages administratifs.
+
+Les principales opérations réalisées sont :
+
+- **Chargement** des carreaux Filosofi 2019
+- **Filtrage** sur les zones d'étude (Bordeaux et Biarritz)
+- **Cartographie** du revenu médian et de la part des ménages pauvres
+- **Analyse** des contrastes spatiaux centre / périphérie
+
+---
 
 ## Jointures de données
 
-Les données socio-économiques (Filosofi, OFGL) sont associées aux données géographiques grâce aux codes INSEE.
+Les données socio-économiques sont associées aux données géographiques grâce au
+**code INSEE commune**, commun à toutes les sources utilisées (Filosofi, IGN, OSM).
+Cette jointure permet de croiser les géométries avec les indicateurs de revenus
+et de pauvreté pour produire des cartes thématiques.

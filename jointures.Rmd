@@ -1,36 +1,66 @@
 ---
-title: "Jointures de données"
-output: html_document
+title: "Jointures"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
 ---
 
-## Objectif
+# Objectif
 
-Les jointures permettent de combiner les données socio-économiques et les données géographiques.
-
----
-
-## Données utilisées
-
-- OFGL
-- Filosofi
-- communes (INSEE)
+Les jointures permettent d’associer les données statistiques aux données géographiques afin de réaliser des analyses socio-économiques spatialisées.
 
 ---
 
-## Traitements réalisés
+# Principe des jointures
 
-- jointure par code INSEE
-- association données revenus / communes
-- préparation des analyses spatiales
+Les données issues de l’INSEE (Filosofi et OFGL) sont reliées aux objets géographiques grâce à des identifiants communs comme les codes INSEE ou les identifiants des carreaux.
+
+Cette opération permet d’afficher les indicateurs statistiques directement sur les cartes et d’analyser les contrastes socio-spatiaux entre les centres urbains et les périphéries.
 
 ---
 
-## Code (exemple)
+# Exemple de jointure sous R
 
-```r
+```{r}
+library(sf)
 library(dplyr)
 
-communes <- read.csv("communes.csv")
-revenus <- read.csv("revenus.csv")
+# Lecture des données géographiques
+communes <- st_read("data/communes.gpkg")
 
-data <- merge(communes, revenus, by = "code_insee")
+# Lecture des données statistiques
+ofgl <- read.csv("data/ofgl.csv")
+
+# Aperçu des données
+head(ofgl)
+```
+
+---
+
+# Exemple de résultat cartographique
+
+La carte suivante illustre le résultat d’une jointure entre les données statistiques de l’INSEE et les géométries des carreaux utilisés dans l’analyse raster.
+
+![](images/revenu_median.jpg.jpg)
+
+---
+
+# Interprétation
+
+Les jointures permettent de représenter spatialement plusieurs indicateurs socio-économiques :
+- le revenu médian
+- la part des ménages pauvres
+- les contrastes centre / périphérie
+
+Ces traitements facilitent l’analyse des inégalités sociales entre Bordeaux et Biarritz à une échelle fine grâce aux données carroyées de l’INSEE.
+
+---
+
+# Sources
+
+- INSEE Filosofi 2019
+- OFGL
+- OpenStreetMap
+- Géotraitements réalisés sous R

@@ -1,26 +1,86 @@
 ---
 title: "Données"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
 ---
 
 ## Origine des données
 
-Ce projet utilise plusieurs sources de données géographiques et socio-économiques.
+Ce projet mobilise plusieurs sources de données géographiques et socio-économiques
+pour analyser les inégalités de revenus entre le centre et la périphérie de
+**Bordeaux** et **Biarritz**.
 
-## OFGL
+---
 
-Les données de l’OFGL (Observatoire des Finances et de la Gestion publique Locale) permettent d’analyser les ressources financières des communes.
+## Tableau récapitulatif
 
-## Filosofi (INSEE)
+```{r tableau, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
 
-Les données Filosofi permettent d’étudier les revenus, la pauvreté et les inégalités socio-économiques.
+donnees <- data.frame(
+  Nom = c(
+    "Carreaux Filosofi",
+    "Contours des communes",
+    "Recettes des communes (OFGL)"
+  ),
+  Date = c("2019", "2025", "2024"),
+  Projection = c("EPSG:2154", "NA", "NA"),
+  Format = c("gpkg", "gpkg", "csv"),
+  Poids = c("NA", "128 Ko", "908 Ko"),
+  Etendue = c("France", "Bordeaux / Biarritz", "France"),
+  Lien = c(
+    "https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515",
+    "Requête OSM : admin_level=8 Bordeaux / Biarritz",
+    "https://data.ofgl.fr"
+  )
+)
+
+kable(donnees)
+```
+
+---
+
+## Description des sources
+
+### Carreaux Filosofi — INSEE (2019)
+
+Les données **Filosofi** (Fichier Localisé Social et Fiscal) sont produites par l'INSEE.
+Elles fournissent des indicateurs socio-économiques à l'échelle des carreaux de
+**200m × 200m**, ce qui permet une analyse fine des inégalités indépendamment
+des découpages administratifs.
+
+Deux indicateurs sont utilisés :
+
+- **Revenu médian par individu** (€/an)
+- **Part des ménages sous le seuil de pauvreté** (%)
+
+🔗 [Accéder aux données Filosofi](https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515)
+
+---
+
+### Contours des communes — OSM (2025)
+
+Les **limites communales** ont été récupérées via une requête **OpenStreetMap**
+(admin_level=8) pour Bordeaux et Biarritz. Elles sont utilisées comme couche
+vecteur de référence pour délimiter les zones d'étude.
+
+---
+
+### Recettes des communes — OFGL (2024)
+
+Les données de l'**OFGL** (Observatoire des Finances et de la Gestion publique Locale)
+permettent d'analyser les ressources financières des communes étudiées.
+
+🔗 [Accéder aux données OFGL](https://data.ofgl.fr)
+
+---
 
 ## Communes étudiées
 
-Les communes analysées sont :
-- Biarritz
-- Bordeaux
-
-## Données spatiales
-
-Le projet utilise également des données géographiques communales ainsi que des carreaux de 200m pour une analyse fine des disparités.
+| Commune | Code INSEE | Département |
+|---------|-----------|-------------|
+| Bordeaux | 33063 | Gironde (33) |
+| Biarritz | 64102 | Pyrénées-Atlantiques (64) |

@@ -1,33 +1,50 @@
 ---
-title: "GT Rasters - Carreaux 200m"
-output: html_document
+title: "GT Raster"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
 ---
 
-## Objectif
+# Objectif
 
-Les traitements raster permettent d’analyser les inégalités socio-spatiales à une échelle fine grâce aux carreaux de 200m.
-
----
-
-## Données utilisées
-
-- Carreaux INSEE 200m
-- Données de revenus (Filosofi)
+Les géotraitements raster permettent d’analyser les inégalités socio-économiques à une échelle fine grâce aux carreaux INSEE de 200 mètres.
 
 ---
 
-## Traitements réalisés
+# Schéma des géotraitements
 
-- lecture des carreaux
-- sélection sur zone d’étude (Biarritz / Bordeaux)
-- analyse des variations de revenus
-- visualisation des disparités spatiales
+Le schéma suivant présente les étapes méthodologiques utilisées pour produire les cartes raster.
+
+![](images/schema_gt.jpg.jpg)
 
 ---
 
-## Code (exemple)
+# Carte 1 — Revenu médian par carreau
 
-```r
-library(sf)
+Cette carte représente le revenu médian annuel par individu dans les carreaux INSEE de 200 mètres.
 
-carreaux <- st_read("carreaux_200m.gpkg")
+![](images/revenu_median.jpg.jpg)
+
+---
+
+# Carte 2 — Part des ménages pauvres
+
+Cette carte représente la part des ménages pauvres par carreau de 200 mètres.
+
+![](images/pauvrete.jpg.jpg)
+
+---
+
+# Interprétation
+
+Les cartes mettent en évidence des contrastes socio-spatiaux entre centres urbains et périphéries. Bordeaux présente des inégalités plus marquées, tandis que Biarritz montre des contrastes plus localisés.
+
+---
+
+# Sources
+
+- INSEE Filosofi 2019 — données carroyées 200 m
+- Limites communales OpenStreetMap
+- Géotraitements réalisés sous R
