@@ -11,7 +11,7 @@
 
 
 
-<title>Données</title>
+<title>Méthodologie SIG</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,228 +348,305 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Données</h1>
+<h1 class="title toc-ignore">Méthodologie SIG</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Cette page présente l’ensemble des sources de données mobilisées dans
-le cadre de ce projet SIG. Les données utilisées sont de nature à la
-fois <strong>géographiques</strong> (vecteur et raster) et
-<strong>socio-économiques</strong> (tabulaires), et proviennent de
-producteurs institutionnels français reconnus. Elles ont été
-sélectionnées pour leur complémentarité et leur compatibilité spatiale
-sur les territoires de <strong>Bordeaux</strong> et
-<strong>Biarritz</strong>.</p>
+<p>Cet onglet présente l’ensemble des traitements SIG réalisés sous
+<strong>R</strong> pour produire les cartes et analyses de ce projet. La
+méthodologie s’articule autour de trois types d’opérations : les
+<strong>géotraitements vecteur</strong>, les <strong>géotraitements
+raster</strong>, et les <strong>jointures attributaires</strong>. Ces
+traitements ont été appliqués de manière identique sur les deux
+territoires étudiés — Bordeaux et Biarritz — afin de garantir la
+comparabilité des résultats.</p>
+<p>Les packages R principalement utilisés sont : <code>sf</code>
+(manipulation de données vectorielles), <code>terra</code> (traitement
+raster), <code>dplyr</code> (manipulation attributaire) et
+<code>ggplot2</code> (cartographie).</p>
 <hr />
 </div>
-<div id="tableau-récapitulatif" class="section level2">
-<h2>Tableau récapitulatif</h2>
+<div id="géotraitements-vecteur" class="section level2">
+<h2>Géotraitements vecteur</h2>
+<p>Les géotraitements vecteur portent sur des entités géographiques
+discrètes représentées sous forme de <strong>polygones</strong> :
+contours de communes et carreaux INSEE. Ces opérations permettent de
+structurer l’espace d’étude et de calculer les indicateurs
+socio-économiques à représenter.</p>
+<div id="schéma-de-géotraitement-vecteur" class="section level3">
+<h3>Schéma de géotraitement vecteur</h3>
+<p><img src="images/schema_gt.jpg.jpg" /></p>
+<p><em>Schéma de l’enchaînement des géotraitements vecteur, depuis les
+données sources jusqu’aux cartes produites.</em></p>
+</div>
+<div id="étapes-réalisées" class="section level3">
+<h3>Étapes réalisées</h3>
 <table>
 <colgroup>
-<col width="21%" />
-<col width="10%" />
-<col width="3%" />
-<col width="13%" />
-<col width="22%" />
-<col width="16%" />
-<col width="11%" />
+<col width="18%" />
+<col width="28%" />
+<col width="28%" />
+<col width="23%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th align="left">Nom</th>
-<th align="left">Source</th>
-<th align="left">Date</th>
-<th align="left">Format</th>
-<th align="left">Type géométrique</th>
-<th align="left">Projection</th>
-<th align="left">Étendue</th>
+<th>Étape</th>
+<th>Opération</th>
+<th>Fonction R</th>
+<th>Package</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Carreaux Filosofi</td>
-<td align="left">INSEE</td>
-<td align="left">2019</td>
-<td align="left">GeoPackage (.gpkg)</td>
-<td align="left">Polygones (carroyage 200m)</td>
-<td align="left">EPSG:2154 (Lambert-93)</td>
-<td align="left">France entière</td>
+<td>1</td>
+<td>Reprojection en Lambert-93</td>
+<td><code>st_transform(2154)</code></td>
+<td><code>sf</code></td>
 </tr>
 <tr class="even">
-<td align="left">Contours des communes</td>
-<td align="left">IGN — COGiter</td>
-<td align="left">2023</td>
-<td align="left">GeoPackage (.gpkg)</td>
-<td align="left">Polygones (limites communales)</td>
-<td align="left">EPSG:4326 (WGS84)</td>
-<td align="left">France entière</td>
+<td>2</td>
+<td>Sélection attributaire des communes</td>
+<td><code>filter(DEPCOM == "33063")</code></td>
+<td><code>dplyr</code></td>
 </tr>
 <tr class="odd">
-<td align="left">Recettes des communes (OFGL)</td>
-<td align="left">OFGL</td>
-<td align="left">2024</td>
-<td align="left">Tableur (.csv)</td>
-<td align="left">Tableau attributaire</td>
-<td align="left">Non applicable</td>
-<td align="left">France entière</td>
+<td>3</td>
+<td>Création de la zone tampon (5 km)</td>
+<td><code>st_buffer(commune, 5000)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Intersection spatiale carreaux × buffer</td>
+<td><code>st_intersection(carreaux, buffer)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Calcul des indicateurs</td>
+<td><code>mutate()</code></td>
+<td><code>dplyr</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Discrétisation en classes communes</td>
+<td><code>cut(valeur, breaks, labels)</code></td>
+<td><code>base R</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Cartographie</td>
+<td><code>ggplot2</code> + <code>geom_sf()</code></td>
+<td><code>ggplot2</code></td>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="indicateurs-calculés-à-létape-5" class="section level3">
+<h3>Indicateurs calculés à l’étape 5</h3>
+<pre class="r"><code>carreaux &lt;- carreaux %&gt;%
+  mutate(
+    revenu_moyen  = ind_snv / ind,          # Revenu moyen par individu (€/an)
+    taux_pauvrete = men_pauv / men * 100,   # Part des ménages pauvres (%)
+    densite       = ind / 4                 # Densité (individus/ha, 1 carreau = 4 ha)
+  )</code></pre>
+</div>
+<div id="cartes-produites" class="section level3">
+<h3>Cartes produites</h3>
+<p>Ces géotraitements aboutissent à deux cartes comparatives Bordeaux /
+Biarritz :</p>
+<ul>
+<li><strong>Carte 3</strong> — Revenu médian par carreau (200m)</li>
+<li><strong>Carte 4</strong> — Part des ménages pauvres par carreau
+(200m)</li>
+</ul>
 <hr />
 </div>
-<div id="description-des-sources" class="section level2">
-<h2>Description des sources</h2>
-<div id="carreaux-filosofi-insee-2019" class="section level3">
-<h3>🟦 Carreaux Filosofi — INSEE (2019)</h3>
-<p>Les données <strong>Filosofi</strong> (Fichier Localisé Social et
-Fiscal) sont produites par l’INSEE à partir du croisement des fichiers
-fiscaux et sociaux. Elles fournissent des indicateurs socio-économiques
-à l’échelle de <strong>carreaux de 200m × 200m</strong>, ce qui permet
-une analyse fine des inégalités <strong>indépendamment des découpages
-administratifs</strong>.</p>
-<p>Ce niveau de granularité est particulièrement adapté à l’étude des
-dynamiques centre/périphérie, car il évite l’effet de lissage propre aux
-données agrégées à l’échelle communale.</p>
-<p><strong>Indicateurs utilisés dans ce projet :</strong></p>
-<table>
-<thead>
-<tr class="header">
-<th>Indicateur</th>
-<th>Variable</th>
-<th>Unité</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Revenu médian par individu</td>
-<td><code>ind_snv</code> / <code>ind</code></td>
-<td>€/an</td>
-</tr>
-<tr class="even">
-<td>Part des ménages pauvres</td>
-<td><code>men_pauv</code> / <code>men</code></td>
-<td>%</td>
-</tr>
-<tr class="odd">
-<td>Nombre d’individus</td>
-<td><code>ind</code></td>
-<td>Personnes</td>
-</tr>
-<tr class="even">
-<td>Nombre de ménages</td>
-<td><code>men</code></td>
-<td>Ménages</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Seuil de pauvreté retenu :</strong> 60 % du revenu médian
-national (définition Eurostat).</p>
+</div>
+<div id="géotraitements-raster" class="section level2">
+<h2>Géotraitements raster</h2>
+<p>Les géotraitements raster permettent de <strong>convertir des données
+vectorielles en surface continue</strong> pour les superposer à d’autres
+couches et produire une carte de synthèse. Dans ce projet, les carreaux
+Filosofi (initialement des polygones vecteur) sont rastérisés afin
+d’être combinés avec les données communales OFGL.</p>
 <blockquote>
-<p>⚠️ Les carreaux comportant moins de 11 ménages sont masqués par
-l’INSEE pour des raisons de secret statistique, ce qui explique les
-cases blanches visibles sur les cartes.</p>
+<p>⚠️ <strong>Point méthodologique important</strong> : les carreaux
+Filosofi sont fournis en format vecteur (polygones GeoPackage). La
+conversion en raster via <code>terra::rasterize()</code> est une étape
+de traitement choisie pour permettre la superposition avec la couche
+communale et produire une carte de synthèse continue.</p>
 </blockquote>
-<p><a
-href="https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515">📥
-Accéder aux données Filosofi</a></p>
-<hr />
+<div id="schéma-de-géotraitement-raster" class="section level3">
+<h3>Schéma de géotraitement raster</h3>
+<p><img src="images/schema_raster.jpg.png" /></p>
+<p><em>Schéma de l’enchaînement des géotraitements raster, incluant la
+jointure attributaire et la rastérisation.</em></p>
 </div>
-<div id="contours-des-communes-ign-cogiter-2023" class="section level3">
-<h3>🟩 Contours des communes — IGN COGiter (2023)</h3>
-<p>Les <strong>limites communales</strong> proviennent de l’IGN via le
-référentiel <strong>COGiter</strong> (Code Officiel Géographique). Elles
-sont utilisées comme couche vecteur de référence pour :</p>
-<ul>
-<li>Sélectionner les communes de Bordeaux (<code>33063</code>) et
-Biarritz (<code>64122</code>)</li>
-<li>Créer les zones tampon de 5 km autour de chaque commune</li>
-<li>Délimiter visuellement les contours des villes sur les cartes
-finales</li>
-</ul>
-<p>Ce référentiel est mis à jour annuellement et constitue la source
-officielle des limites administratives françaises.</p>
-<hr />
-</div>
-<div id="recettes-des-communes-ofgl-2024" class="section level3">
-<h3>🟧 Recettes des communes — OFGL (2024)</h3>
-<p>Les données de l’<strong>Observatoire des Finances et de la Gestion
-publique Locale (OFGL)</strong> renseignent sur les ressources
-financières des communes françaises. Dans ce projet, elles sont
-utilisées pour enrichir les données géographiques communales via une
-<strong>jointure attributaire</strong> sur le code INSEE commune.</p>
-<p><strong>Variable utilisée :</strong></p>
+<div id="étapes-réalisées-1" class="section level3">
+<h3>Étapes réalisées</h3>
 <table>
+<colgroup>
+<col width="18%" />
+<col width="28%" />
+<col width="28%" />
+<col width="23%" />
+</colgroup>
 <thead>
 <tr class="header">
-<th>Variable</th>
-<th>Description</th>
-<th>Unité</th>
+<th>Étape</th>
+<th>Opération</th>
+<th>Fonction R</th>
+<th>Package</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>dep_eq_hab</code></td>
-<td>Dépenses d’équipement par habitant</td>
-<td>€/habitant</td>
-</tr>
-</tbody>
-</table>
-<p>Cette variable permet de mettre en relation les niveaux
-d’investissement public local avec les inégalités de revenus observées
-spatialement.</p>
-<p><a href="https://data.ofgl.fr">📥 Accéder aux données OFGL</a></p>
-<hr />
-</div>
-</div>
-<div id="communes-étudiées" class="section level2">
-<h2>Communes étudiées</h2>
-<table>
-<thead>
-<tr class="header">
-<th>Commune</th>
-<th>Code INSEE</th>
-<th>Département</th>
-<th>Population (2019)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Bordeaux</td>
-<td>33063</td>
-<td>Gironde (33)</td>
-<td>~257 000 hab.</td>
+<td>1</td>
+<td>Reprojection + intersection des carreaux</td>
+<td><code>st_transform()</code> + <code>st_intersection()</code></td>
+<td><code>sf</code></td>
 </tr>
 <tr class="even">
-<td>Biarritz</td>
-<td>64122</td>
-<td>Pyrénées-Atlantiques (64)</td>
-<td>~25 000 hab.</td>
+<td>2</td>
+<td>Création zone tampon 5 km</td>
+<td><code>st_buffer(5000)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Jointure OFGL sur les communes</td>
+<td><code>left_join()</code></td>
+<td><code>dplyr</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>Rastérisation</strong> des carreaux</td>
+<td><code>terra::rasterize()</code></td>
+<td><code>terra</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><strong>Rastérisation</strong> des communes OFGL</td>
+<td><code>terra::rasterize()</code></td>
+<td><code>terra</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Superposition raster + vecteur</td>
+<td><code>geom_raster()</code> + <code>geom_sf()</code></td>
+<td><code>ggplot2</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="carte-produite" class="section level3">
+<h3>Carte produite</h3>
+<p>Ce géotraitement aboutit à :</p>
+<ul>
+<li><strong>Carte raster 1</strong> — Taux de pauvreté (carreaux) ×
+Dépenses d’équipement par habitant (communes OFGL)</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="jointures-attributaires" class="section level2">
+<h2>Jointures attributaires</h2>
+<p>La jointure attributaire est l’opération qui permet de <strong>relier
+un tableau de données socio-économiques à une couche
+géographique</strong> via un identifiant commun. Elle ne modifie pas la
+géométrie des entités, mais enrichit leur table attributaire.</p>
+<div id="jointure-réalisée" class="section level3">
+<h3>Jointure réalisée</h3>
+<table>
+<colgroup>
+<col width="29%" />
+<col width="29%" />
+<col width="25%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Couche géographique</th>
+<th>Table attributaire</th>
+<th>Clé de jointure</th>
+<th>Fonction R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Contours communes (IGN)</td>
+<td>Recettes communes (OFGL)</td>
+<td>Code INSEE commune</td>
+<td><code>left_join()</code></td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Jointure entre les géométries communales et les données OFGL
+communes_ofgl &lt;- communes %&gt;%
+  left_join(ofgl, by = c(&quot;INSEE_COM&quot; = &quot;code_insee&quot;))</code></pre>
+</div>
+<div id="pourquoi-un-left_join" class="section level3">
+<h3>Pourquoi un <code>left_join()</code> ?</h3>
+<p>Le <code>left_join()</code> conserve <strong>toutes les communes de
+la couche géographique</strong>, même celles absentes des données OFGL.
+Cela évite de perdre des géométries en cas de données manquantes, et
+permet de visualiser les zones sans information financière.</p>
+<hr />
+</div>
+</div>
+<div id="synthèse-des-traitements" class="section level2">
+<h2>Synthèse des traitements</h2>
+<table>
+<colgroup>
+<col width="17%" />
+<col width="32%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Opérations</th>
+<th>Cartes produites</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Vecteur</strong></td>
+<td>Reprojection, sélection, buffer, intersection, calcul attributaire,
+discrétisation</td>
+<td>Carte 3 (revenu médian), Carte 4 (part ménages pauvres)</td>
+</tr>
+<tr class="even">
+<td><strong>Raster</strong></td>
+<td>Rastérisation, superposition raster/vecteur</td>
+<td>Carte raster 1 (pauvreté × dépenses équipement)</td>
+</tr>
+<tr class="odd">
+<td><strong>Jointure</strong></td>
+<td><code>left_join()</code> OFGL × communes IGN</td>
+<td>Enrichissement attributaire pour carte raster</td>
 </tr>
 </tbody>
 </table>
 <hr />
 </div>
-<div id="limites-et-précautions-dusage" class="section level2">
-<h2>Limites et précautions d’usage</h2>
-<p>Plusieurs limites méthodologiques doivent être gardées à l’esprit
-lors de l’interprétation des résultats :</p>
-<ul>
-<li><strong>Secret statistique</strong> : les carreaux Filosofi de moins
-de 11 ménages sont masqués, introduisant des zones sans données dans les
-secteurs peu denses</li>
-<li><strong>Décalage temporel</strong> : les données Filosofi datent de
-2019, les données OFGL de 2024 — les analyses croisées doivent tenir
-compte de cette différence</li>
-<li><strong>Échelle d’analyse</strong> : le carroyage 200m est adapté
-aux zones urbaines denses mais peut manquer de pertinence dans les
-espaces périurbains peu peuplés</li>
-<li><strong>Projection</strong> : les carreaux Filosofi sont fournis en
-Lambert-93 (EPSG:2154) et ont nécessité une reprojection avant tout
-traitement spatial</li>
-</ul>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>La combinaison de géotraitements vecteur et raster permet
+d’appréhender les inégalités socio-spatiales à différentes échelles et
+sous différentes formes. Les traitements vecteur offrent une précision
+géométrique adaptée à l’analyse carroyée fine, tandis que la
+rastérisation permet une lecture continue et synthétique du territoire.
+Les jointures attributaires constituent le lien essentiel entre les
+données géographiques et les données socio-économiques, rendant possible
+la cartographie thématique.</p>
+<p>L’ensemble de ces traitements a été appliqué de manière symétrique
+sur Bordeaux et Biarritz, garantissant ainsi la comparabilité des
+analyses présentées dans les onglets suivants.</p>
 </div>
 
 
