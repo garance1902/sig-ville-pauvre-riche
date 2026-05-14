@@ -7,11 +7,9 @@ output:
     toc_float: true
 ---
 
-## Origine des données
+## Introduction
 
-Ce projet mobilise plusieurs sources de données géographiques et socio-économiques
-pour analyser les inégalités de revenus entre le centre et la périphérie de
-**Bordeaux** et **Biarritz**.
+Cette page présente l'ensemble des sources de données mobilisées dans le cadre de ce projet SIG. Les données utilisées sont de nature à la fois **géographiques** (vecteur et raster) et **socio-économiques** (tabulaires), et proviennent de producteurs institutionnels français reconnus. Elles ont été sélectionnées pour leur complémentarité et leur compatibilité spatiale sur les territoires de **Bordeaux** et **Biarritz**.
 
 ---
 
@@ -26,61 +24,86 @@ donnees <- data.frame(
     "Contours des communes",
     "Recettes des communes (OFGL)"
   ),
-  Date = c("2019", "2025", "2024"),
-  Projection = c("EPSG:2154", "NA", "NA"),
-  Format = c("gpkg", "gpkg", "csv"),
-  Poids = c("NA", "128 Ko", "908 Ko"),
-  Etendue = c("France", "Bordeaux / Biarritz", "France"),
-  Lien = c(
-    "https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515",
-    "Requête OSM : admin_level=8 Bordeaux / Biarritz",
-    "https://data.ofgl.fr"
-  )
+  Source = c("INSEE", "IGN — COGiter", "OFGL"),
+  Date = c("2019", "2023", "2024"),
+  Format = c("GeoPackage (.gpkg)", "GeoPackage (.gpkg)", "Tableur (.csv)"),
+  Type_geometrique = c("Polygones (carroyage 200m)", "Polygones (limites communales)", "Tableau attributaire"),
+  Projection = c("EPSG:2154 (Lambert-93)", "EPSG:4326 (WGS84)", "Non applicable"),
+  Etendue = c("France entière", "France entière", "France entière")
 )
 
-kable(donnees)
+kable(donnees, col.names = c("Nom", "Source", "Date", "Format", "Type géométrique", "Projection", "Étendue"))
 ```
 
 ---
 
 ## Description des sources
 
-### Carreaux Filosofi — INSEE (2019)
+### 🟦 Carreaux Filosofi — INSEE (2019)
 
-Les données **Filosofi** (Fichier Localisé Social et Fiscal) sont produites par l'INSEE.
-Elles fournissent des indicateurs socio-économiques à l'échelle des carreaux de
-**200m × 200m**, ce qui permet une analyse fine des inégalités indépendamment
-des découpages administratifs.
+Les données **Filosofi** (Fichier Localisé Social et Fiscal) sont produites par l'INSEE à partir du croisement des fichiers fiscaux et sociaux. Elles fournissent des indicateurs socio-économiques à l'échelle de **carreaux de 200m × 200m**, ce qui permet une analyse fine des inégalités **indépendamment des découpages administratifs**.
 
-Deux indicateurs sont utilisés :
+Ce niveau de granularité est particulièrement adapté à l'étude des dynamiques centre/périphérie, car il évite l'effet de lissage propre aux données agrégées à l'échelle communale.
 
-- **Revenu médian par individu** (€/an)
-- **Part des ménages sous le seuil de pauvreté** (%)
+**Indicateurs utilisés dans ce projet :**
 
-🔗 [Accéder aux données Filosofi](https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515)
+| Indicateur | Variable | Unité |
+|-----------|----------|-------|
+| Revenu médian par individu | `ind_snv` / `ind` | €/an |
+| Part des ménages pauvres | `men_pauv` / `men` | % |
+| Nombre d'individus | `ind` | Personnes |
+| Nombre de ménages | `men` | Ménages |
+
+**Seuil de pauvreté retenu :** 60 % du revenu médian national (définition Eurostat).
+
+> ⚠️ Les carreaux comportant moins de 11 ménages sont masqués par l'INSEE pour des raisons de secret statistique, ce qui explique les cases blanches visibles sur les cartes.
+
+[📥 Accéder aux données Filosofi](https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515)
 
 ---
 
-### Contours des communes — OSM (2025)
+### 🟩 Contours des communes — IGN COGiter (2023)
 
-Les **limites communales** ont été récupérées via une requête **OpenStreetMap**
-(admin_level=8) pour Bordeaux et Biarritz. Elles sont utilisées comme couche
-vecteur de référence pour délimiter les zones d'étude.
+Les **limites communales** proviennent de l'IGN via le référentiel **COGiter** (Code Officiel Géographique). Elles sont utilisées comme couche vecteur de référence pour :
+
+- Sélectionner les communes de Bordeaux (`33063`) et Biarritz (`64122`)
+- Créer les zones tampon de 5 km autour de chaque commune
+- Délimiter visuellement les contours des villes sur les cartes finales
+
+Ce référentiel est mis à jour annuellement et constitue la source officielle des limites administratives françaises.
 
 ---
 
-### Recettes des communes — OFGL (2024)
+### 🟧 Recettes des communes — OFGL (2024)
 
-Les données de l'**OFGL** (Observatoire des Finances et de la Gestion publique Locale)
-permettent d'analyser les ressources financières des communes étudiées.
+Les données de l'**Observatoire des Finances et de la Gestion publique Locale (OFGL)** renseignent sur les ressources financières des communes françaises. Dans ce projet, elles sont utilisées pour enrichir les données géographiques communales via une **jointure attributaire** sur le code INSEE commune.
 
-🔗 [Accéder aux données OFGL](https://data.ofgl.fr)
+**Variable utilisée :**
+
+| Variable | Description | Unité |
+|----------|-------------|-------|
+| `dep_eq_hab` | Dépenses d'équipement par habitant | €/habitant |
+
+Cette variable permet de mettre en relation les niveaux d'investissement public local avec les inégalités de revenus observées spatialement.
+
+[📥 Accéder aux données OFGL](https://data.ofgl.fr)
 
 ---
 
 ## Communes étudiées
 
-| Commune | Code INSEE | Département |
-|---------|-----------|-------------|
-| Bordeaux | 33063 | Gironde (33) |
-| Biarritz | 64102 | Pyrénées-Atlantiques (64) |
+| Commune | Code INSEE | Département | Population (2019) |
+|---------|-----------|-------------|-------------------|
+| Bordeaux | 33063 | Gironde (33) | ~257 000 hab. |
+| Biarritz | 64122 | Pyrénées-Atlantiques (64) | ~25 000 hab. |
+
+---
+
+## Limites et précautions d'usage
+
+Plusieurs limites méthodologiques doivent être gardées à l'esprit lors de l'interprétation des résultats :
+
+- **Secret statistique** : les carreaux Filosofi de moins de 11 ménages sont masqués, introduisant des zones sans données dans les secteurs peu denses
+- **Décalage temporel** : les données Filosofi datent de 2019, les données OFGL de 2024 — les analyses croisées doivent tenir compte de cette différence
+- **Échelle d'analyse** : le carroyage 200m est adapté aux zones urbaines denses mais peut manquer de pertinence dans les espaces périurbains peu peuplés
+- **Projection** : les carreaux Filosofi sont fournis en Lambert-93 (EPSG:2154) et ont nécessité une reprojection avant tout traitement spatial

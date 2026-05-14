@@ -1,61 +1,65 @@
 ---
-title: "Projet SIG - Inégalités socio-spatiales : Biarritz / Bordeaux"
-output: html_document
+title: "Projet SIG — Inégalités socio-spatiales : Bordeaux & Biarritz"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
 ---
 
 ## Introduction
 
-Ce projet de Système d’Information Géographique (SIG) analyse les inégalités socio-spatiales entre deux villes françaises : Biarritz et Bordeaux.
+Les inégalités socio-spatiales constituent l'un des enjeux majeurs de la géographie urbaine contemporaine. Dans un contexte de métropolisation croissante, les disparités de revenus et d'accès aux ressources ne se distribuent pas aléatoirement dans l'espace : elles s'organisent selon des logiques territoriales structurées, que les outils SIG permettent aujourd'hui de mettre en évidence avec précision.
 
-L’objectif est de comprendre comment les disparités de revenus et d’accès aux ressources s’organisent dans l’espace urbain.
+Ce projet analyse les inégalités socio-économiques dans deux villes françaises aux profils contrastés : **Bordeaux**, grande métropole aquitaine marquée par une forte polarisation sociale interne, et **Biarritz**, ville moyenne du littoral basque à forte attractivité touristique et résidentielle. En mobilisant des données carroyées à haute résolution (200m × 200m) ainsi que des données communales financières, ce projet vise à cartographier et comparer les dynamiques spatiales d'inégalité dans ces deux territoires.
 
 ---
 
 ## Problématique
 
-Comment les dynamiques de centre / périphérie permettent-elles d’expliquer les inégalités socio-économiques entre Biarritz et Bordeaux ?
+> **Dans quelle mesure les inégalités socio-économiques se structurent-elles selon une logique centre/périphérie à Bordeaux et à Biarritz, et comment ces dynamiques varient-elles entre une grande métropole et une ville moyenne à vocation touristique ?**
+
+Cette problématique repose sur l'hypothèse que la concentration spatiale des richesses et de la pauvreté n'est pas identique selon la taille et la nature des villes. À Bordeaux, on s'attend à une polarisation forte entre un centre aisé et des périphéries défavorisées, tandis qu'à Biarritz, la logique touristique et résidentielle pourrait produire des configurations spatiales différentes.
 
 ---
 
 ## Données mobilisées
 
-Les analyses reposent sur plusieurs sources de données :
+Les analyses reposent sur trois sources de données complémentaires :
 
-- OFGL : finances et ressources des collectivités locales  
-- Filosofi (INSEE) : revenus et niveaux de vie des ménages  
-- Données communales : limites administratives des territoires  
-- Carreaux 200m : grille fine pour analyser les disparités spatiales  
+- **Filosofi (INSEE, 2019)** : données carroyées à 200m fournissant le revenu médian et la part des ménages sous le seuil de pauvreté, indépendamment des découpages administratifs
+- **Contours des communes (IGN — COGiter)** : limites administratives vectorielles utilisées comme couche de référence spatiale
+- **Recettes des communes (OFGL, 2024)** : données financières communales permettant d'analyser les ressources fiscales des territoires étudiés
 
----
-
-## Méthodologie générale
-
-Le projet repose sur des traitements SIG réalisés sous R :
-
-- Traitements de données vectorielles (communes, limites, sélection spatiale)  
-- Traitements de données raster (carreaux 200m)  
-- Jointures entre données géographiques et socio-économiques  
-- Comparaison entre deux espaces urbains contrastés  
+> La description détaillée de chaque source, leurs formats et leurs métadonnées sont disponibles dans l'onglet **Données**.
 
 ---
 
 ## Territoires étudiés
 
-- Biarritz : ville moyenne à forte attractivité touristique  
-- Bordeaux : grande métropole marquée par de fortes inégalités internes  
+| Commune | Type | Caractéristique principale |
+|---------|------|---------------------------|
+| **Bordeaux** | Grande métropole | Forte polarisation sociale, dynamique de gentrification |
+| **Biarritz** | Ville moyenne | Attractivité touristique et résidentielle, littoral |
+
+Ces deux villes ont été retenues pour leur contraste : elles représentent deux modalités différentes d'organisation socio-spatiale, ce qui permet une comparaison analytique pertinente.
 
 ---
 
 ## Organisation du site
 
-- Données  
-- Méthodologie SIG  
-- Analyse de Biarritz  
-- Analyse de Bordeaux  
-- Comparaison des deux villes  
+Le site est structuré en cinq onglets :
+
+1. **Données** — description et métadonnées des sources utilisées
+2. **Méthodologie SIG** — présentation des géotraitements vecteur, raster et jointures
+3. **Analyse de Bordeaux** — cartes et interprétation des inégalités à Bordeaux
+4. **Analyse de Biarritz** — cartes et interprétation des inégalités à Biarritz
+5. **Comparaison** — mise en regard des deux territoires
 
 ---
 
-## Objectif final
+## Conclusion
 
-Mettre en évidence les logiques d’inégalités territoriales et comprendre comment elles varient selon les échelles urbaines.
+Ce projet met en évidence que les inégalités socio-spatiales ne suivent pas un modèle unique : si Bordeaux révèle une polarisation classique entre un hypercentre aisé et des franges périurbaines défavorisées, Biarritz présente une géographie des inégalités plus fragmentée, influencée par la pression foncière liée au tourisme et à l'attractivité résidentielle du littoral.
+
+L'utilisation croisée de données carroyées fines (Filosofi 200m) et de données communales (OFGL) permet de dépasser les effets de lissage des découpages administratifs et de saisir la réalité socio-spatiale à une échelle plus proche du vécu des habitants. Ces résultats invitent à interroger les politiques publiques de rééquilibrage territorial à l'échelle de chaque agglomération.
