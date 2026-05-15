@@ -1,6 +1,7 @@
 name: "SIG Biarritz Bordeaux"
 
 navbar:
+  title: "SIG Biarritz Bordeaux"
   left:
     - text: "Accueil"
       href: index.html
@@ -15,10 +16,10 @@ navbar:
     - text: "Jointures"
       href: jointures.html
 
-resources:
-  - images
+output_dir: "docs"
 
 output:
   html_document:
     theme: cosmo
     toc: true
+    toc_float: true
