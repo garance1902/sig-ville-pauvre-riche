@@ -9,9 +9,11 @@ output:
 
 ## Introduction
 
-Cette page présente les géotraitements de type **raster** mobilisés dans ce projet. Contrairement aux données vecteur qui représentent des entités géographiques discrètes, les données raster offrent une **lecture continue du territoire**, particulièrement adaptée à la superposition de plusieurs couches d'information à des échelles différentes.
+Cette page présente les géotraitements de type **raster** mobilisés dans ce projet.
 
-Dans ce projet, la rastérisation consiste à convertir les carreaux Filosofi (initialement des polygones vecteur au format GeoPackage) en surfaces continues via la fonction `terra::rasterize()`, afin de les superposer aux données communales OFGL. Deux cartes de synthèse étaient prévues, croisant données carroyées fines et données communales agrégées. En raison de difficultés techniques rencontrées lors du traitement, ces cartes n'ont pas pu être produites — leur conception et leur intérêt analytique sont néanmoins présentés ci-dessous.
+Contrairement aux données vecteur qui représentent des entités géographiques discrètes, les données raster offrent une lecture continue du territoire, adaptée à la superposition multi-échelles.
+
+Dans ce projet, la rastérisation consiste à convertir les carreaux Filosofi (vecteur) en surfaces continues afin de les croiser avec les données communales OFGL.
 
 ---
 
@@ -19,471 +21,70 @@ Dans ce projet, la rastérisation consiste à convertir les carreaux Filosofi (i
 
 ![](images/schema_raster.jpg.png)
 
-*Figure 1 — Schéma de géotraitement raster : rastérisation des carreaux Filosofi et jointure avec les données OFGL, jusqu'à la superposition des couches.*
+*Figure 1 — Schéma de géotraitement raster : rastérisation des carreaux Filosofi et jointure avec les données OFGL.*
 
 ---
 
-## Carte raster 1 — Pauvreté × Dépenses d'équipement
+## Carte raster 1 — Pauvreté × Dépenses d’équipement
 
 ### Sources mobilisées
 
-| Couche | Source | Variable | Représentation |
-|--------|--------|----------|---------------|
-| Carreaux 200m Filosofi | INSEE (2019) | Taux de pauvreté (%) | Dégradé rouge/vert, rastérisé via `terra` |
-| Comptes consolidés des communes | OFGL (2024) | Dépenses d'équipement (€/hab) | Aplat bleu par commune |
+| Couche | Source | Variable |
+|--------|--------|----------|
+| Carreaux 200m Filosofi | INSEE 2019 | Taux de pauvreté |
+| Communes OFGL | 2024 | Dépenses d’équipement |
 
 ### Conception cartographique
 
-Cette carte devait superposer deux niveaux de lecture :
+Cette carte devait croiser deux niveaux de lecture :
 
-- **À l'échelle du carreau (200m)** : le taux de pauvreté des ménages, rastérisé à partir des carreaux Filosofi, affiché en dégradé du rouge (forte pauvreté) au vert (faible pauvreté)
-- **À l'échelle communale** : les dépenses d'équipement par habitant issues de l'OFGL, jointes aux géométries communales via `left_join()` et affichées en aplat bleu
+- **Carreaux 200m (INSEE)** : taux de pauvreté, rastérisé via `terra`
+- **Communes (OFGL)** : dépenses d’équipement par habitant
 
-Les deux villes — Bordeaux et Biarritz — devaient être représentées côte à côte pour permettre une comparaison directe.
+L’objectif était de comparer les logiques de concentration de la pauvreté avec les politiques d’investissement public local, dans une logique de ségrégation socio-spatiale.
 
-### Chaîne de traitement prévue
+### Remarque
 
-```{r raster1, echo=TRUE, eval=FALSE}
-# Rastérisation des carreaux Filosofi
-r_template <- rast(ext(carreaux_bdx), resolution = 200, crs = "EPSG:2154")
-raster_pauvrete <- terra::rasterize(carreaux_bdx, r_template,
-                                    field = "taux_pauvrete")
+> ⚠️ Cette carte n’a pas pu être finalisée en raison de difficultés techniques liées à la rastérisation et à la superposition des couches (`terra::rasterize()` et `geom_raster()`).
 
-# Jointure OFGL sur les communes
-communes_ofgl <- communes %>%
-  left_join(ofgl, by = c("INSEE_COM" = "code_insee"))
-
-# Rastérisation des communes avec dépenses d'équipement
-raster_depenses <- terra::rasterize(communes_ofgl, r_template,
-                                    field = "dep_eq_hab")
-
-# Superposition des deux couches
-ggplot() +
-  geom_raster(data = as.data.frame(raster_pauvrete, xy = TRUE),
-              aes(x = x, y = y, fill = taux_pauvrete)) +
-  scale_fill_gradient(low = "green", high = "red") +
-  geom_sf(data = communes_ofgl, aes(color = dep_eq_hab),
-          fill = NA, linewidth = 1) +
-  scale_color_gradient(low = "#cce5ff", high = "#004080")
-```
-
-### Analyse
-
-Cette carte aurait permis de **croiser deux indicateurs clés de la ségrégation socio-spatiale** : la concentration de la pauvreté à l'échelle fine du carreau, et le niveau d'investissement public communal. L'hypothèse sous-jacente est que les communes qui investissent peu en équipements coïncident avec les zones de forte pauvreté, formant ainsi des territoires doublement défavorisés.
-
-La comparaison Bordeaux / Biarritz aurait été particulièrement éclairante : à Biarritz, la dimension touristique de la ville influence probablement fortement les dépenses d'équipement, orientées vers des infrastructures d'accueil et de loisirs plutôt que vers des équipements de proximité pour les résidents permanents. Ce contraste avec Bordeaux, dont les dépenses reflètent davantage les besoins d'une métropole en croissance, aurait permis d'enrichir l'analyse des causes et conséquences des inégalités territoriales.
-
-> ⚠️ **Note technique** : la production de cette carte s'est heurtée à des difficultés lors de l'étape de rastérisation et de superposition des couches (`terra::rasterize()` + `geom_raster()`). La carte n'a donc pas pu être finalisée, mais la chaîne de traitement est présentée ci-dessus.
+La chaîne de traitement est néanmoins présentée dans la partie méthodologique.
 
 ---
 
-
-## Carte raster 2 — Logements sociaux × Score fiscal composite
+## Carte raster 2 — Logements sociaux × score fiscal
 
 ### Sources mobilisées
 
-| Couche | Source | Variable | Représentation |
-|--------|--------|----------|---------------|
-| Carreaux 200m Filosofi | INSEE (2019) | Part de logements sociaux (%) | Dégradé beige/violet, rastérisé via `terra` |
-| Comptes consolidés des communes | OFGL (2024) | Score composite fiscal (TVA + impôts normalisés) | Aplat orange par commune |
+| Couche | Source | Variable |
+|--------|--------|----------|
+| Carreaux INSEE | 2019 | Part de logements sociaux |
+| Communes OFGL | 2024 | Score fiscal composite |
 
 ### Conception cartographique
 
-Cette carte devait croiser deux dimensions complémentaires de la ségrégation spatiale :
+Cette carte devait croiser :
 
-- **À l'échelle du carreau (200m)** : la part de logements sociaux, rastérisée à partir des carreaux Filosofi, en dégradé du beige (faible concentration) au violet (forte concentration)
-- **À l'échelle communale** : un score composite fiscal combinant recettes de TVA et impôts locaux normalisés par habitant, issu des données OFGL, affiché en aplat orange
+- la concentration de logements sociaux (échelle fine du carreau)
+- un indicateur fiscal communal composite
 
-### Chaîne de traitement prévue
+Elle visait à analyser les formes de double ségrégation :
+- sociale (logement)
+- et fiscale (capacité d’investissement local)
 
-```{r raster2, echo=TRUE, eval=FALSE}
-# Calcul du score composite fiscal
-communes_ofgl <- communes_ofgl %>%
-  mutate(score_fiscal = scale(tva_hab) + scale(impots_hab))
+### Remarque
 
-# Rastérisation des carreaux — logements sociaux
-raster_logsoc <- terra::rasterize(carreaux_bdx, r_template,
-                                  field = "part_log_soc")
+> ⚠️ Cette carte n’a pas pu être produite dans sa version finale.
 
-# Rastérisation des communes — score fiscal
-raster_fiscal <- terra::rasterize(communes_ofgl, r_template,
-                                  field = "score_fiscal")
-
-# Superposition
-ggplot() +
-  geom_raster(data = as.data.frame(raster_logsoc, xy = TRUE),
-              aes(x = x, y = y, fill = part_log_soc)) +
-  scale_fill_gradient(low = "beige", high = "purple") +
-  geom_sf(data = communes_ofgl, aes(color = score_fiscal),
-          fill = NA, linewidth = 1) +
-  scale_color_gradient(low = "#ffe0b2", high = "#e65100")
-```
-
-### Analyse
-
-Cette deuxième carte proposait une **double lecture de la ségrégation spatiale centre/périphérie**, en croisant la concentration des logements sociaux — indicateur de la composition sociale du parc résidentiel — avec la faiblesse des ressources fiscales communales.
-
-L'intérêt de cette approche réside dans la **lecture à deux échelles simultanées** : celle du carreau (200m), qui capture les contrastes internes fins au sein d'une même commune, et celle de la commune, qui situe chaque territoire dans un contexte fiscal plus large. Cette double échelle aurait permis d'identifier des configurations comme des communes fiscalement faibles abritant une forte concentration de logements sociaux, signe d'une ségrégation à la fois sociale et fiscale.
-
-Appliquée à Bordeaux et Biarritz, cette carte aurait enrichi la comparaison en ajoutant une dimension de **politique du logement** à l'analyse des inégalités, et aurait permis d'interroger le rôle des ressources fiscales locales dans la reproduction ou l'atténuation des ségrégations spatiales.
-
-> ⚠️ **Note technique** : comme pour la carte raster 1, des difficultés techniques ont empêché la finalisation de cette carte. La variable `part_log_soc` n'était pas disponible directement dans le fichier Filosofi utilisé et aurait nécessité un retraitement des données sources.
+La variable `part_log_soc` n’était pas directement disponible dans les données Filosofi utilisées et aurait nécessité un retraitement supplémentaire.
 
 ---
 
-## Bilan des géotraitements raster
+## Apport analytique des cartes non produites
 
-Bien que les deux cartes raster n'aient pas pu être produites, la démarche méthodologique engagée illustre l'intérêt du croisement multi-sources et multi-échelles en SIG :
+Même si les cartes finales n’ont pas été générées, leur conception permet de mettre en évidence :
 
-| Carte | Croisement | Échelles | Apport analytique |
-|-------|-----------|----------|-------------------|
-| Raster 1 | Pauvreté × Dépenses d'équipement | Carreau + Commune | Lien entre investissement public et concentration de la pauvreté |
-| Raster 2 | Logements sociaux × Score fiscal | Carreau + Commune | Double ségrégation sociale et fiscale |
+- l’intérêt d’un croisement multi-échelles (carreaux + communes)
+- la logique de ségrégation socio-spatiale
+- les limites techniques de la rastérisation sous `terra`
 
-La rastérisation via `terra::rasterize()` constitue une étape clé de ce type d'analyse : elle permet de passer d'entités discrètes (polygones) à une surface continue, facilitant la superposition et la lecture visuelle de phénomènes spatiaux complexes.
-
----
-
-## Conclusion
-
-Les géotraitements raster prévus dans ce projet visaient à enrichir l'analyse des inégalités socio-spatiales par un croisement d'indicateurs à deux échelles complémentaires. Si les difficultés techniques rencontrées n'ont pas permis de produire les cartes finales, la conception méthodologique de ces traitements — rastérisation, jointure attributaire, superposition de couches — témoigne d'une approche SIG avancée, capable de mobiliser des sources hétérogènes pour produire une lecture synthétique et multi-dimensionnelle des territoires étudiés.
-
-## cartographie
-### découpage des carreaux manquants
-
-library(sf)
-library(mapsf)
-
-commune <- st_read("data/communes.gpkg", "communes", quiet=T)
-biarritz <- commune[commune$code == '64122', ]
-
-st_crs(car)
-
-biarritz <- st_transform(biarritz, st_crs(car))
-
-car <- st_read("data/Filosofi.gpkg", "carreaux_200m_met", quiet=T)  
-# ou depuis votre fichier dpt selon ce que vous avez
-
-# Intersection Biarritz - carreaux, puis union
-inter <- st_union(st_intersection(biarritz, car))
-
-mf_map(inter)
-
-# Différence : zones sans carreau
-diff <- st_difference(biarritz, inter)
-
-# Cartographie
-diff$ta_variable[is.na(diff$ta_variable)] <- 0
-colSums(is.na(diff))
-
-class(diff)
-##nettoyage
-diff <- diff[!st_is_empty(diff), ]
-diff <- st_make_valid(diff)
-diff$area <- as.numeric(st_area(diff))
-mf_map(diff, var = "area", type = "choro")
-## rectification
-
-st_intersects(biarritz, car, sparse = FALSE)[1:5,1:5]
-
-class(inter)
-str(inter)
-st_intersection(biarritz, car)
-
-st_crs(biarritz)
-st_crs(car)
-
-nrow(diff)
-summary(diff$area)
-
-diff$area <- st_area(diff)
-mf_map(diff, var = "area")
-
-mf_map(diff)
-
-mf_map(biarritz, add = TRUE, col = NA)
-
-mf_layout("Carreaux manquants sur Biarritz", "Filosofi 2019\nIGN 2026")
-
-###
-library(sf)
-library(terra)
-library(dplyr)
-library(ggplot2)
-library(ggspatial)
-library(patchwork)
-library(cowplot)
-library(scales)
-library(COGiter)
-library(readxl)
-library(readr)
-
-
-# --- Carreaux INSEE ---
-carreaux <- st_read("data/Filosofi.gpkg", quiet = TRUE) %>%
-  
-st_transform(2154) %>%
-  
-  mutate(
-    taux_pauvrete = ifelse(men > 0, men_pauv / men * 100, NA_real_)
-  )
-
-# --- Communes (COGiter) ---
-communes_fr <- communes_metro_geo
-
-bordeaux_com <- communes_fr %>%
-  filter(DEPCOM == "33063") %>%
-  st_transform(2154)
-
-biarritz_com <- communes_fr %>%
-  filter(DEPCOM == "64122") %>%
-  st_transform(2154)
-
-# --- OFGL : dépenses d'équipement ---
-# Adapter le nom du fichier et des colonnes selon ton export OFGL
-ofgl_raw <- read_csv2("data/ofgl.csv")
-
-names(ofgl_raw)
-
-names(ofgl_raw)[1:10]
-
-# Vérifier les colonnes disponibles avec : names(ofgl_raw)
-#nettoyage des noms
-library(janitor)
-
-ofgl_raw <- ofgl_raw %>%
-  clean_names()
-  
-ofgl_raw <- clean_names(ofgl_raw)
-
-ofgl_raw <- janitor::clean_names(ofgl_raw)
-ls()
-
-# Adapter les noms ci-dessous selon ce que tu vois
-
-ofgl <- ofgl_raw %>%
-  rename(
-    insee          = code_insee_2024_commune,   
-# colonne code INSEE commune → remplacer 1 par le nom exact
-    dep_equipement = agregat,   
-# colonne dépenses équipement → remplacer 2 par le nom exact
-    population     = population_totale    
-# colonne population → remplacer 3 par le nom exact
-  ) %>%
-  mutate(
-    insee          = as.character(insee),
-    dep_equipement = as.numeric(dep_equipement),
-    population     = as.numeric(population),
-    # Dépenses d'équipement par habitant (€/hab) — plus comparable entre communes
-    dep_eq_hab     = ifelse(population > 0, dep_equipement / population, NA_real_)
-  ) %>%
-  select(insee, dep_equipement, population, dep_eq_hab)
-
-# --- Jointure OFGL → géométries communes ---
-communes_ofgl <- communes_fr %>%
-  st_transform(2154) %>%
-  left_join(ofgl, by = c("DEPCOM" = "insee"))
-
-
-
-bordeaux_buf <- st_buffer(st_union(bordeaux_com), 5000)
-biarritz_buf <- st_buffer(st_union(biarritz_com), 5000)
-
-# --- Filtrage carreaux ---
-carreaux_bdx <- st_intersection(carreaux, bordeaux_buf)
-carreaux_btz <- st_intersection(carreaux, biarritz_buf)
-
-# --- Filtrage communes OFGL dans les zones ---
-communes_bdx <- st_intersection(communes_ofgl, bordeaux_buf)
-communes_btz <- st_intersection(communes_ofgl, biarritz_buf)
-
-# C'est ici que le géotraitement devient raster :
-# on convertit les polygones carreaux en raster pour algèbre de carte
-
-rasteriser_carreaux <- function(couche_sf, variable, buf, resolution = 200) {
-  template <- rast(
-    ext  = ext(vect(buf)),
-    res  = resolution,
-    crs  = "EPSG:2154"
-  )
-  rasterize(vect(couche_sf), template, field = variable, fun = "mean")
-}
-
-r_bdx_pauv <- rasteriser_carreaux(carreaux_bdx, "taux_pauvrete", bordeaux_buf)
-r_btz_pauv <- rasteriser_carreaux(carreaux_btz, "taux_pauvrete", biarritz_buf)
-
-# Conversion raster → dataframe pour ggplot
-raster_to_df <- function(r) {
-  as.data.frame(r, xy = TRUE) %>%
-    rename(valeur = 3) %>%
-    filter(!is.na(valeur))
-}
-
-df_bdx_pauv <- raster_to_df(r_bdx_pauv)
-df_btz_pauv <- raster_to_df(r_btz_pauv)
-
-
-
-# Breaks pauvreté (carreaux — fond raster)
-breaks_pauv <- c(0, 5, 10, 20, 35, 100)
-labels_pauv <- c("0–5 %", "5–10 %", "10–20 %", "20–35 %", "> 35 %")
-palette_pauv <- c("#1A9850", "#91CF60", "#FEE08B", "#FC8D59", "#D73027")
-
-discretiser_pauv <- function(df) {
-  df %>%
-    mutate(
-      pauv_classe = cut(valeur, breaks = breaks_pauv,
-                        labels = labels_pauv,
-                        include.lowest = TRUE, right = FALSE)
-    )
-}
-
-df_bdx_pauv <- discretiser_pauv(df_bdx_pauv)
-df_btz_pauv <- discretiser_pauv(df_btz_pauv)
-
-# Breaks dépenses équipement/hab (communes — surcouche vecteur)
-# Calculer les quantiles sur les deux villes ensemble
-all_dep <- c(communes_bdx$dep_eq_hab, communes_btz$dep_eq_hab)
-breaks_dep <- quantile(all_dep, probs = c(0, 0.25, 0.5, 0.75, 1),
-                       na.rm = TRUE)
-
-
-faire_carte_superposee <- function(df_raster, communes_ville,
-                                   commune_focus, titre, sous_titre) {
-
-  emprise <- st_bbox(st_buffer(st_union(commune_focus), 500))
-
-  ggplot() +
-
-    # --- FOND : carreaux pauvreté (raster converti en df) ---
-    geom_raster(data = df_raster,
-                aes(x = x, y = y, fill = pauv_classe),
-                alpha = 0.85) +
-
-    scale_fill_manual(
-      values   = setNames(palette_pauv, labels_pauv),
-      name     = "Taux de pauvreté (%)\n[carreaux 200m]",
-      na.value = "grey90",
-      drop     = FALSE
-    ) +
-
-    # --- SURCOUCHE : communes colorées par dépenses équipement ---
-    # Nouvelle échelle de couleur pour les communes (contours épais)
-    new_scale_fill() +   # nécessite ggnewscale
-
-    geom_sf(data = communes_ville,
-            aes(fill = dep_eq_hab),
-            color = "white", linewidth = 0.6,
-            alpha = 0.45) +   # transparence pour voir le raster dessous
-
-    scale_fill_distiller(
-      palette  = "Blues",
-      direction = 1,
-      name     = "Dépenses équipement\n(€/habitant) [communes]",
-      na.value = "grey80",
-      labels   = label_number(big.mark = " ", suffix = " €")
-    ) +
-
-    # --- Contour commune principale ---
-    geom_sf(data = commune_focus,
-            fill = NA, color = "black", linewidth = 1) +
-
-    # --- Échelle + nord ---
-    annotation_scale(location = "bl", width_hint = 0.3,
-                     style = "ticks", unit_category = "metric",
-                     text_cex = 0.7) +
-
-    annotation_north_arrow(location = "tr", which_north = "true",
-                           style = north_arrow_minimal(),
-                           height = unit(0.8, "cm"),
-                           width  = unit(0.8, "cm")) +
-
-    coord_sf(
-      xlim = emprise[c(1, 3)],
-      ylim = emprise[c(2, 4)],
-      crs  = 2154
-    ) +
-
-    theme_minimal(base_size = 10) +
-    theme(
-      plot.title       = element_text(face = "bold", size = 11, hjust = 0.5),
-      plot.subtitle    = element_text(size = 8, color = "grey40", hjust = 0.5),
-      legend.position  = "bottom",
-      legend.title     = element_text(face = "bold", size = 8),
-      legend.text      = element_text(size = 7.5),
-      legend.key.width  = unit(0.9, "cm"),
-      legend.key.height = unit(0.35, "cm"),
-      panel.grid.major  = element_line(color = "grey93", linewidth = 0.3),
-      axis.text         = element_text(size = 6, color = "grey55")
-    ) +
-
-    labs(title = titre, subtitle = sous_titre)
-}
-
-# --- Installer ggnewscale si besoin (pour deux fill indépendants) ---
-# install.packages("ggnewscale")
-library(ggnewscale)
-
-
-
-carte_bdx <- faire_carte_superposee(
-  df_raster      = df_bdx_pauv,
-  communes_ville = communes_bdx,
-  commune_focus  = bordeaux_com,
-  titre          = "Bordeaux",
-  sous_titre     = "Taux de pauvreté (carreaux) + dépenses équipement (communes)"
-)
-
-carte_btz <- faire_carte_superposee(
-  df_raster      = df_btz_pauv,
-  communes_ville = communes_btz,
-  commune_focus  = biarritz_com,
-  titre          = "Biarritz",
-  sous_titre     = "Taux de pauvreté (carreaux) + dépenses équipement (communes)"
-)
-
-
-
-titre_global <- ggdraw() +
-  draw_label(
-    "Pauvreté des ménages et dépenses d'équipement communales — Bordeaux & Biarritz",
-    fontface = "bold", size = 13, x = 0.5, hjust = 0.5
-  )
-
-sous_titre_global <- ggdraw() +
-  draw_label(
-    "Superposition raster (carreaux INSEE 200m) et vecteur (communes OFGL)",
-    size = 9, color = "grey40", x = 0.5, hjust = 0.5
-  )
-
-corps <- plot_grid(carte_bdx, carte_btz, ncol = 2)
-
-source_label <- ggdraw() +
-  draw_label(
-    "Sources : INSEE Filosofi 2019 — Carreaux 200m | OFGL Comptes consolidés communes | IGN Admin Express COG 2023\nRéalisation : [Vos noms], 2025",
-    size = 7, color = "grey50", x = 0.02, hjust = 0
-  )
-
-carte_finale <- plot_grid(
-  titre_global,
-  sous_titre_global,
-  corps,
-  source_label,
-  ncol        = 1,
-  rel_heights = c(0.06, 0.04, 1, 0.06)
-)
-
-
-carte_finale
-
-ggsave(
-  filename = "carte_raster_ofgl_pauvrete.png",
-  plot     = carte_finale,
-  width    = 38, height = 24, units = "cm",
-  dpi      = 300, bg = "white"
-)
-
-
-message("✅ Carte exportée : carte_raster_ofgl_pauvrete.png")
-
-
+Ces éléments restent essentiels dans la compréhension de la démarche SIG globale du projet.
