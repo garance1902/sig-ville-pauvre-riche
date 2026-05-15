@@ -1,0 +1,24 @@
+name: "SIG Biarritz Bordeaux"
+
+navbar:
+  left:
+    - text: "Accueil"
+      href: index.html
+    - text: "Données"
+      href: donnees.html
+    - text: "Méthodologie"
+      href: methodologie.html
+    - text: "GT vecteurs"
+      href: gt_vecteurs.html
+    - text: "GT Rasters"
+      href: gt_rasters.html
+    - text: "Jointures"
+      href: jointures.html
+
+resources:
+  - images
+
+output:
+  html_document:
+    theme: cosmo
+    toc: true
