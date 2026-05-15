@@ -11,7 +11,7 @@
 
 
 
-<title>Projet SIG — Inégalités socio-spatiales : Bordeaux &amp; Biarritz</title>
+<title>Données</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,131 +348,228 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Projet SIG — Inégalités socio-spatiales :
-Bordeaux &amp; Biarritz</h1>
+<h1 class="title toc-ignore">Données</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Les inégalités socio-spatiales constituent l’un des enjeux majeurs de
-la géographie urbaine contemporaine. Dans un contexte de métropolisation
-croissante, les disparités de revenus et d’accès aux ressources ne se
-distribuent pas aléatoirement dans l’espace : elles s’organisent selon
-des logiques territoriales structurées, que les outils SIG permettent
-aujourd’hui de mettre en évidence avec précision.</p>
-<p>Ce projet analyse les inégalités socio-économiques dans deux villes
-françaises aux profils contrastés : <strong>Bordeaux</strong>, grande
-métropole aquitaine marquée par une forte polarisation sociale interne,
-et <strong>Biarritz</strong>, ville moyenne du littoral basque à forte
-attractivité touristique et résidentielle. En mobilisant des données
-carroyées à haute résolution (200m × 200m) ainsi que des données
-communales financières, ce projet vise à cartographier et comparer les
-dynamiques spatiales d’inégalité dans ces deux territoires.</p>
+<p>Cette page présente l’ensemble des sources de données mobilisées dans
+le cadre de ce projet SIG. Les données utilisées sont de nature à la
+fois <strong>géographiques</strong> (vecteur et raster) et
+<strong>socio-économiques</strong> (tabulaires), et proviennent de
+producteurs institutionnels français reconnus. Elles ont été
+sélectionnées pour leur complémentarité et leur compatibilité spatiale
+sur les territoires de <strong>Bordeaux</strong> et
+<strong>Biarritz</strong>.</p>
 <hr />
 </div>
-<div id="problématique" class="section level2">
-<h2>Problématique</h2>
-<blockquote>
-<p><strong>Dans quelle mesure les inégalités socio-économiques se
-structurent-elles selon une logique centre/périphérie à Bordeaux et à
-Biarritz, et comment ces dynamiques varient-elles entre une grande
-métropole et une ville moyenne à vocation touristique ?</strong></p>
-</blockquote>
-<p>Cette problématique repose sur l’hypothèse que la concentration
-spatiale des richesses et de la pauvreté n’est pas identique selon la
-taille et la nature des villes. À Bordeaux, on s’attend à une
-polarisation forte entre un centre aisé et des périphéries défavorisées,
-tandis qu’à Biarritz, la logique touristique et résidentielle pourrait
-produire des configurations spatiales différentes.</p>
-<hr />
-</div>
-<div id="données-mobilisées" class="section level2">
-<h2>Données mobilisées</h2>
-<p>Les analyses reposent sur trois sources de données complémentaires
-:</p>
-<ul>
-<li><strong>Filosofi (INSEE, 2019)</strong> : données carroyées à 200m
-fournissant le revenu médian et la part des ménages sous le seuil de
-pauvreté, indépendamment des découpages administratifs</li>
-<li><strong>Contours des communes (IGN — COGiter)</strong> : limites
-administratives vectorielles utilisées comme couche de référence
-spatiale</li>
-<li><strong>Recettes des communes (OFGL, 2024)</strong> : données
-financières communales permettant d’analyser les ressources fiscales des
-territoires étudiés</li>
-</ul>
-<blockquote>
-<p>La description détaillée de chaque source, leurs formats et leurs
-métadonnées sont disponibles dans l’onglet <strong>Données</strong>.</p>
-</blockquote>
-<hr />
-</div>
-<div id="territoires-étudiés" class="section level2">
-<h2>Territoires étudiés</h2>
+<div id="tableau-récapitulatif" class="section level2">
+<h2>Tableau récapitulatif</h2>
 <table>
 <colgroup>
 <col width="21%" />
-<col width="14%" />
-<col width="64%" />
+<col width="10%" />
+<col width="3%" />
+<col width="13%" />
+<col width="22%" />
+<col width="16%" />
+<col width="11%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th>Commune</th>
-<th>Type</th>
-<th>Caractéristique principale</th>
+<th align="left">Nom</th>
+<th align="left">Source</th>
+<th align="left">Date</th>
+<th align="left">Format</th>
+<th align="left">Type géométrique</th>
+<th align="left">Projection</th>
+<th align="left">Étendue</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Bordeaux</strong></td>
-<td>Grande métropole</td>
-<td>Forte polarisation sociale, dynamique de gentrification</td>
+<td align="left">Carreaux Filosofi</td>
+<td align="left">INSEE</td>
+<td align="left">2019</td>
+<td align="left">GeoPackage (.gpkg)</td>
+<td align="left">Polygones (carroyage 200m)</td>
+<td align="left">EPSG:2154 (Lambert-93)</td>
+<td align="left">France entière</td>
 </tr>
 <tr class="even">
-<td><strong>Biarritz</strong></td>
-<td>Ville moyenne</td>
-<td>Attractivité touristique et résidentielle, littoral</td>
+<td align="left">Contours des communes</td>
+<td align="left">IGN — COGiter</td>
+<td align="left">2023</td>
+<td align="left">GeoPackage (.gpkg)</td>
+<td align="left">Polygones (limites communales)</td>
+<td align="left">EPSG:4326 (WGS84)</td>
+<td align="left">France entière</td>
+</tr>
+<tr class="odd">
+<td align="left">Recettes des communes (OFGL)</td>
+<td align="left">OFGL</td>
+<td align="left">2024</td>
+<td align="left">Tableur (.csv)</td>
+<td align="left">Tableau attributaire</td>
+<td align="left">Non applicable</td>
+<td align="left">France entière</td>
 </tr>
 </tbody>
 </table>
-<p>Ces deux villes ont été retenues pour leur contraste : elles
-représentent deux modalités différentes d’organisation socio-spatiale,
-ce qui permet une comparaison analytique pertinente.</p>
 <hr />
 </div>
-<div id="organisation-du-site" class="section level2">
-<h2>Organisation du site</h2>
-<p>Le site est structuré en cinq onglets :</p>
-<ol style="list-style-type: decimal">
-<li><strong>Données</strong> — description et métadonnées des sources
-utilisées</li>
-<li><strong>Méthodologie SIG</strong> — présentation des géotraitements
-vecteur, raster et jointures</li>
-<li><strong>Analyse de Bordeaux</strong> — cartes et interprétation des
-inégalités à Bordeaux</li>
-<li><strong>Analyse de Biarritz</strong> — cartes et interprétation des
-inégalités à Biarritz</li>
-<li><strong>Comparaison</strong> — mise en regard des deux
-territoires</li>
-</ol>
+<div id="description-des-sources" class="section level2">
+<h2>Description des sources</h2>
+<div id="carreaux-filosofi-insee-2019" class="section level3">
+<h3>🟦 Carreaux Filosofi — INSEE (2019)</h3>
+<p>Les données <strong>Filosofi</strong> (Fichier Localisé Social et
+Fiscal) sont produites par l’INSEE à partir du croisement des fichiers
+fiscaux et sociaux. Elles fournissent des indicateurs socio-économiques
+à l’échelle de <strong>carreaux de 200m × 200m</strong>, ce qui permet
+une analyse fine des inégalités <strong>indépendamment des découpages
+administratifs</strong>.</p>
+<p>Ce niveau de granularité est particulièrement adapté à l’étude des
+dynamiques centre/périphérie, car il évite l’effet de lissage propre aux
+données agrégées à l’échelle communale.</p>
+<p><strong>Indicateurs utilisés dans ce projet :</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Indicateur</th>
+<th>Variable</th>
+<th>Unité</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Revenu médian par individu</td>
+<td><code>ind_snv</code> / <code>ind</code></td>
+<td>€/an</td>
+</tr>
+<tr class="even">
+<td>Part des ménages pauvres</td>
+<td><code>men_pauv</code> / <code>men</code></td>
+<td>%</td>
+</tr>
+<tr class="odd">
+<td>Nombre d’individus</td>
+<td><code>ind</code></td>
+<td>Personnes</td>
+</tr>
+<tr class="even">
+<td>Nombre de ménages</td>
+<td><code>men</code></td>
+<td>Ménages</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Seuil de pauvreté retenu :</strong> 60 % du revenu médian
+national (définition Eurostat).</p>
+<blockquote>
+<p>⚠️ Les carreaux comportant moins de 11 ménages sont masqués par
+l’INSEE pour des raisons de secret statistique, ce qui explique les
+cases blanches visibles sur les cartes.</p>
+</blockquote>
+<p><a
+href="https://www.insee.fr/fr/statistiques/7655475?sommaire=7655515">📥
+Accéder aux données Filosofi</a></p>
 <hr />
 </div>
-<div id="conclusion" class="section level2">
-<h2>Conclusion</h2>
-<p>Ce projet met en évidence que les inégalités socio-spatiales ne
-suivent pas un modèle unique : si Bordeaux révèle une polarisation
-classique entre un hypercentre aisé et des franges périurbaines
-défavorisées, Biarritz présente une géographie des inégalités plus
-fragmentée, influencée par la pression foncière liée au tourisme et à
-l’attractivité résidentielle du littoral.</p>
-<p>L’utilisation croisée de données carroyées fines (Filosofi 200m) et
-de données communales (OFGL) permet de dépasser les effets de lissage
-des découpages administratifs et de saisir la réalité socio-spatiale à
-une échelle plus proche du vécu des habitants. Ces résultats invitent à
-interroger les politiques publiques de rééquilibrage territorial à
-l’échelle de chaque agglomération.</p>
+<div id="contours-des-communes-ign-cogiter-2023" class="section level3">
+<h3>🟩 Contours des communes — IGN COGiter (2023)</h3>
+<p>Les <strong>limites communales</strong> proviennent de l’IGN via le
+référentiel <strong>COGiter</strong> (Code Officiel Géographique). Elles
+sont utilisées comme couche vecteur de référence pour :</p>
+<ul>
+<li>Sélectionner les communes de Bordeaux (<code>33063</code>) et
+Biarritz (<code>64122</code>)</li>
+<li>Créer les zones tampon de 5 km autour de chaque commune</li>
+<li>Délimiter visuellement les contours des villes sur les cartes
+finales</li>
+</ul>
+<p>Ce référentiel est mis à jour annuellement et constitue la source
+officielle des limites administratives françaises.</p>
+<hr />
+</div>
+<div id="recettes-des-communes-ofgl-2024" class="section level3">
+<h3>🟧 Recettes des communes — OFGL (2024)</h3>
+<p>Les données de l’<strong>Observatoire des Finances et de la Gestion
+publique Locale (OFGL)</strong> renseignent sur les ressources
+financières des communes françaises. Dans ce projet, elles sont
+utilisées pour enrichir les données géographiques communales via une
+<strong>jointure attributaire</strong> sur le code INSEE commune.</p>
+<p><strong>Variable utilisée :</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Description</th>
+<th>Unité</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>dep_eq_hab</code></td>
+<td>Dépenses d’équipement par habitant</td>
+<td>€/habitant</td>
+</tr>
+</tbody>
+</table>
+<p>Cette variable permet de mettre en relation les niveaux
+d’investissement public local avec les inégalités de revenus observées
+spatialement.</p>
+<p><a href="https://data.ofgl.fr">📥 Accéder aux données OFGL</a></p>
+<hr />
+</div>
+</div>
+<div id="communes-étudiées" class="section level2">
+<h2>Communes étudiées</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Commune</th>
+<th>Code INSEE</th>
+<th>Département</th>
+<th>Population (2019)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Bordeaux</td>
+<td>33063</td>
+<td>Gironde (33)</td>
+<td>~257 000 hab.</td>
+</tr>
+<tr class="even">
+<td>Biarritz</td>
+<td>64122</td>
+<td>Pyrénées-Atlantiques (64)</td>
+<td>~25 000 hab.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="limites-et-précautions-dusage" class="section level2">
+<h2>Limites et précautions d’usage</h2>
+<p>Plusieurs limites méthodologiques doivent être gardées à l’esprit
+lors de l’interprétation des résultats :</p>
+<ul>
+<li><strong>Secret statistique</strong> : les carreaux Filosofi de moins
+de 11 ménages sont masqués, introduisant des zones sans données dans les
+secteurs peu denses</li>
+<li><strong>Décalage temporel</strong> : les données Filosofi datent de
+2019, les données OFGL de 2024 — les analyses croisées doivent tenir
+compte de cette différence</li>
+<li><strong>Échelle d’analyse</strong> : le carroyage 200m est adapté
+aux zones urbaines denses mais peut manquer de pertinence dans les
+espaces périurbains peu peuplés</li>
+<li><strong>Projection</strong> : les carreaux Filosofi sont fournis en
+Lambert-93 (EPSG:2154) et ont nécessité une reprojection avant tout
+traitement spatial</li>
+</ul>
 </div>
 
 

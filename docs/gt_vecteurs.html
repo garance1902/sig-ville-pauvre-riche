@@ -11,7 +11,7 @@
 
 
 
-<title>Projet SIG — Inégalités socio-spatiales : Bordeaux &amp; Biarritz</title>
+<title>Géotraitements Vecteur</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,131 +348,223 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Projet SIG — Inégalités socio-spatiales :
-Bordeaux &amp; Biarritz</h1>
+<h1 class="title toc-ignore">Géotraitements Vecteur</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Les inégalités socio-spatiales constituent l’un des enjeux majeurs de
-la géographie urbaine contemporaine. Dans un contexte de métropolisation
-croissante, les disparités de revenus et d’accès aux ressources ne se
-distribuent pas aléatoirement dans l’espace : elles s’organisent selon
-des logiques territoriales structurées, que les outils SIG permettent
-aujourd’hui de mettre en évidence avec précision.</p>
-<p>Ce projet analyse les inégalités socio-économiques dans deux villes
-françaises aux profils contrastés : <strong>Bordeaux</strong>, grande
-métropole aquitaine marquée par une forte polarisation sociale interne,
-et <strong>Biarritz</strong>, ville moyenne du littoral basque à forte
-attractivité touristique et résidentielle. En mobilisant des données
-carroyées à haute résolution (200m × 200m) ainsi que des données
-communales financières, ce projet vise à cartographier et comparer les
-dynamiques spatiales d’inégalité dans ces deux territoires.</p>
+<p>Cette page présente les géotraitements de type
+<strong>vecteur</strong> réalisés dans le cadre de ce projet. Ces
+traitements s’appliquent à des entités géographiques discrètes — ici des
+<strong>polygones</strong> représentant les carreaux INSEE et les
+contours de communes — et permettent de structurer l’espace d’étude, de
+calculer des indicateurs socio-économiques et de produire des cartes
+thématiques comparatives entre Bordeaux et Biarritz.</p>
 <hr />
 </div>
-<div id="problématique" class="section level2">
-<h2>Problématique</h2>
-<blockquote>
-<p><strong>Dans quelle mesure les inégalités socio-économiques se
-structurent-elles selon une logique centre/périphérie à Bordeaux et à
-Biarritz, et comment ces dynamiques varient-elles entre une grande
-métropole et une ville moyenne à vocation touristique ?</strong></p>
-</blockquote>
-<p>Cette problématique repose sur l’hypothèse que la concentration
-spatiale des richesses et de la pauvreté n’est pas identique selon la
-taille et la nature des villes. À Bordeaux, on s’attend à une
-polarisation forte entre un centre aisé et des périphéries défavorisées,
-tandis qu’à Biarritz, la logique touristique et résidentielle pourrait
-produire des configurations spatiales différentes.</p>
+<div id="schéma-de-géotraitement" class="section level2">
+<h2>Schéma de géotraitement</h2>
+<p>Le schéma ci-dessous présente l’enchaînement complet des opérations
+vectorielles réalisées, depuis les données sources jusqu’aux cartes
+finales.</p>
+<p><img src="images/schema_gt.jpg.jpg" /></p>
+<p><em>Figure 1 — Schéma de géotraitement vecteur : des données sources
+aux cartes produites.</em></p>
 <hr />
 </div>
-<div id="données-mobilisées" class="section level2">
-<h2>Données mobilisées</h2>
-<p>Les analyses reposent sur trois sources de données complémentaires
-:</p>
-<ul>
-<li><strong>Filosofi (INSEE, 2019)</strong> : données carroyées à 200m
-fournissant le revenu médian et la part des ménages sous le seuil de
-pauvreté, indépendamment des découpages administratifs</li>
-<li><strong>Contours des communes (IGN — COGiter)</strong> : limites
-administratives vectorielles utilisées comme couche de référence
-spatiale</li>
-<li><strong>Recettes des communes (OFGL, 2024)</strong> : données
-financières communales permettant d’analyser les ressources fiscales des
-territoires étudiés</li>
-</ul>
-<blockquote>
-<p>La description détaillée de chaque source, leurs formats et leurs
-métadonnées sont disponibles dans l’onglet <strong>Données</strong>.</p>
-</blockquote>
+<div id="détail-des-étapes" class="section level2">
+<h2>Détail des étapes</h2>
+<div id="étape-1-reprojection" class="section level3">
+<h3>Étape 1 — Reprojection</h3>
+<p>Les carreaux Filosofi sont fournis en <strong>Lambert-93
+(EPSG:2154)</strong>, projection officielle française adaptée au calcul
+de distances et de surfaces. Une reprojection est appliquée en début de
+traitement pour garantir la cohérence spatiale entre toutes les
+couches.</p>
+<pre class="r"><code>carreaux &lt;- st_transform(carreaux, crs = 2154)
+communes &lt;- st_transform(communes, crs = 2154)</code></pre>
 <hr />
 </div>
-<div id="territoires-étudiés" class="section level2">
-<h2>Territoires étudiés</h2>
+<div id="étape-2-sélection-attributaire" class="section level3">
+<h3>Étape 2 — Sélection attributaire</h3>
+<p>Les communes de <strong>Bordeaux</strong> (code INSEE
+<code>33063</code>) et <strong>Biarritz</strong> (code INSEE
+<code>64122</code>) sont extraites du fichier IGN COGiter par filtrage
+attributaire sur le code commune.</p>
+<pre class="r"><code>bordeaux &lt;- communes %&gt;% filter(DEPCOM == &quot;33063&quot;)
+biarritz &lt;- communes %&gt;% filter(DEPCOM == &quot;64122&quot;)</code></pre>
+<hr />
+</div>
+<div id="étape-3-zone-tampon-buffer-5-km" class="section level3">
+<h3>Étape 3 — Zone tampon (buffer 5 km)</h3>
+<p>Une <strong>zone tampon de 5 km</strong> est créée autour de chaque
+commune afin d’intégrer les communes limitrophes dans l’analyse. Cela
+permet d’étudier les dynamiques centre/périphérie au-delà des seules
+limites administratives.</p>
+<pre class="r"><code>buffer_bdx &lt;- st_buffer(bordeaux, dist = 5000)
+buffer_btz &lt;- st_buffer(biarritz, dist = 5000)</code></pre>
+<hr />
+</div>
+<div id="étape-4-intersection-spatiale" class="section level3">
+<h3>Étape 4 — Intersection spatiale</h3>
+<p>L’intersection spatiale permet de <strong>sélectionner uniquement les
+carreaux situés dans la zone tampon</strong> de chaque ville, en
+découpant les carreaux qui chevauchent la frontière du buffer.</p>
+<pre class="r"><code>carreaux_bdx &lt;- st_intersection(carreaux, buffer_bdx)
+carreaux_btz &lt;- st_intersection(carreaux, buffer_btz)</code></pre>
+<hr />
+</div>
+<div id="étape-5-calcul-attributaire" class="section level3">
+<h3>Étape 5 — Calcul attributaire</h3>
+<p>Trois indicateurs sont calculés à partir des variables brutes
+Filosofi :</p>
+<pre class="r"><code>carreaux_bdx &lt;- carreaux_bdx %&gt;%
+  mutate(
+    revenu_moyen  = ind_snv / ind,        # Revenu moyen par individu (€/an)
+    taux_pauvrete = men_pauv / men * 100, # Part des ménages pauvres (%)
+    densite       = ind / 4               # Densité (individus/ha)
+  )</code></pre>
 <table>
-<colgroup>
-<col width="21%" />
-<col width="14%" />
-<col width="64%" />
-</colgroup>
 <thead>
 <tr class="header">
-<th>Commune</th>
-<th>Type</th>
-<th>Caractéristique principale</th>
+<th>Indicateur</th>
+<th>Formule</th>
+<th>Unité</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Bordeaux</strong></td>
-<td>Grande métropole</td>
-<td>Forte polarisation sociale, dynamique de gentrification</td>
+<td>Revenu moyen par individu</td>
+<td><code>ind_snv / ind</code></td>
+<td>€/an</td>
 </tr>
 <tr class="even">
-<td><strong>Biarritz</strong></td>
-<td>Ville moyenne</td>
-<td>Attractivité touristique et résidentielle, littoral</td>
+<td>Part des ménages pauvres</td>
+<td><code>men_pauv / men × 100</code></td>
+<td>%</td>
+</tr>
+<tr class="odd">
+<td>Densité de population</td>
+<td><code>ind / 4</code></td>
+<td>individus/ha</td>
 </tr>
 </tbody>
 </table>
-<p>Ces deux villes ont été retenues pour leur contraste : elles
-représentent deux modalités différentes d’organisation socio-spatiale,
-ce qui permet une comparaison analytique pertinente.</p>
 <hr />
 </div>
-<div id="organisation-du-site" class="section level2">
-<h2>Organisation du site</h2>
-<p>Le site est structuré en cinq onglets :</p>
-<ol style="list-style-type: decimal">
-<li><strong>Données</strong> — description et métadonnées des sources
-utilisées</li>
-<li><strong>Méthodologie SIG</strong> — présentation des géotraitements
-vecteur, raster et jointures</li>
-<li><strong>Analyse de Bordeaux</strong> — cartes et interprétation des
-inégalités à Bordeaux</li>
-<li><strong>Analyse de Biarritz</strong> — cartes et interprétation des
-inégalités à Biarritz</li>
-<li><strong>Comparaison</strong> — mise en regard des deux
-territoires</li>
-</ol>
+<div id="étape-6-discrétisation" class="section level3">
+<h3>Étape 6 — Discrétisation</h3>
+<p>Les valeurs continues sont découpées en <strong>classes communes aux
+deux villes</strong> grâce à la fonction <code>cut()</code>.
+L’utilisation de breaks identiques pour Bordeaux et Biarritz est
+essentielle pour garantir la <strong>comparabilité des
+cartes</strong>.</p>
+<pre class="r"><code>breaks_revenu &lt;- c(10332, 22772, 25603, 27684, 30397, 44347)
+labels_revenu &lt;- c(&quot;10 332 – 22 772 €&quot;, &quot;22 772 – 25 603 €&quot;,
+                   &quot;25 603 – 27 684 €&quot;, &quot;27 684 – 30 397 €&quot;,
+                   &quot;30 397 – 44 347 €&quot;)
+
+carreaux_bdx &lt;- carreaux_bdx %&gt;%
+  mutate(classe_revenu = cut(revenu_moyen, breaks = breaks_revenu,
+                             labels = labels_revenu, include.lowest = TRUE))</code></pre>
+<hr />
+</div>
+</div>
+<div id="cartes-produites" class="section level2">
+<h2>Cartes produites</h2>
+<div id="carte-3-revenu-médian-par-carreau-200m" class="section level3">
+<h3>Carte 3 — Revenu médian par carreau (200m)</h3>
+<p><img src="images/revenu_median.jpg.jpg" /></p>
+<p><em>Figure 2 — Revenu médian par individu (€/an) à Bordeaux et
+Biarritz, carreaux INSEE 200m. Sources : INSEE Filosofi 2019 — IGN
+COGiter 2023.</em></p>
+<p><strong>Lecture de la carte :</strong> La carte met en évidence une
+<strong>polarisation spatiale nette</strong> à Bordeaux, avec des
+revenus élevés concentrés dans l’hypercentre et les quartiers ouest,
+contrastant avec des revenus plus faibles en périphérie nord et sud-est.
+À Biarritz, la distribution est plus fragmentée, avec une alternance de
+carreaux aisés et défavorisés liée à la structure touristique et
+résidentielle du territoire.</p>
+<hr />
+</div>
+<div id="carte-4-part-des-ménages-pauvres-par-carreau-200m"
+class="section level3">
+<h3>Carte 4 — Part des ménages pauvres par carreau (200m)</h3>
+<p><img src="images/pauvrete.jpg.jpg" /></p>
+<p><em>Figure 3 — Part des ménages sous le seuil de pauvreté (%) à
+Bordeaux et Biarritz, carreaux INSEE 200m. Sources : INSEE Filosofi 2019
+— IGN COGiter 2023.</em></p>
+<p><strong>Lecture de la carte :</strong> La concentration de la
+pauvreté suit une logique spatiale distincte dans les deux villes. À
+Bordeaux, les taux les plus élevés se localisent dans des secteurs
+périphériques bien identifiés, traduisant une ségrégation socio-spatiale
+marquée. À Biarritz, les niveaux de pauvreté sont globalement plus
+faibles mais spatialement dispersés, ce qui reflète une structure
+urbaine moins polarisée.</p>
+<blockquote>
+<p>⚠️ Les cases blanches sur les cartes correspondent aux carreaux
+masqués par l’INSEE pour secret statistique (moins de 11 ménages).</p>
+</blockquote>
+<hr />
+</div>
+</div>
+<div id="analyse-comparative" class="section level2">
+<h2>Analyse comparative</h2>
+<p>La comparaison des deux cartes révèle des logiques spatiales
+contrastées :</p>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="34%" />
+<col width="34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Critère</th>
+<th>Bordeaux</th>
+<th>Biarritz</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Structure des inégalités</td>
+<td>Polarisation centre/périphérie marquée</td>
+<td>Distribution fragmentée, moins hiérarchisée</td>
+</tr>
+<tr class="even">
+<td>Revenus élevés</td>
+<td>Concentrés dans l’hypercentre et l’ouest</td>
+<td>Dispersés, liés à l’attractivité résidentielle</td>
+</tr>
+<tr class="odd">
+<td>Pauvreté</td>
+<td>Localisée en périphérie nord et sud-est</td>
+<td>Faible et spatialement diffuse</td>
+</tr>
+<tr class="even">
+<td>Densité de carreaux renseignés</td>
+<td>Forte (tissu urbain dense)</td>
+<td>Plus faible (espaces moins peuplés)</td>
+</tr>
+</tbody>
+</table>
+<p>Ces résultats confirment l’hypothèse d’une <strong>différenciation
+des dynamiques centre/périphérie selon la nature et la taille de la
+ville</strong> : la polarisation classique observée à Bordeaux ne se
+retrouve pas sous la même forme à Biarritz, où les logiques touristiques
+et foncières produisent une géographie des inégalités plus complexe.</p>
 <hr />
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>Ce projet met en évidence que les inégalités socio-spatiales ne
-suivent pas un modèle unique : si Bordeaux révèle une polarisation
-classique entre un hypercentre aisé et des franges périurbaines
-défavorisées, Biarritz présente une géographie des inégalités plus
-fragmentée, influencée par la pression foncière liée au tourisme et à
-l’attractivité résidentielle du littoral.</p>
-<p>L’utilisation croisée de données carroyées fines (Filosofi 200m) et
-de données communales (OFGL) permet de dépasser les effets de lissage
-des découpages administratifs et de saisir la réalité socio-spatiale à
-une échelle plus proche du vécu des habitants. Ces résultats invitent à
-interroger les politiques publiques de rééquilibrage territorial à
-l’échelle de chaque agglomération.</p>
+<p>Les géotraitements vecteur ont permis de structurer l’espace d’étude
+et de produire deux cartes thématiques comparatives à haute résolution
+spatiale. La chaîne de traitements — reprojection, sélection, buffer,
+intersection, calcul attributaire et discrétisation — constitue le socle
+méthodologique du projet et garantit la cohérence et la comparabilité
+des analyses entre Bordeaux et Biarritz.</p>
 </div>
 
 

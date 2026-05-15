@@ -11,7 +11,7 @@
 
 
 
-<title>Projet SIG — Inégalités socio-spatiales : Bordeaux &amp; Biarritz</title>
+<title>Jointures attributaires</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,131 +348,216 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Projet SIG — Inégalités socio-spatiales :
-Bordeaux &amp; Biarritz</h1>
+<h1 class="title toc-ignore">Jointures attributaires</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Les inégalités socio-spatiales constituent l’un des enjeux majeurs de
-la géographie urbaine contemporaine. Dans un contexte de métropolisation
-croissante, les disparités de revenus et d’accès aux ressources ne se
-distribuent pas aléatoirement dans l’espace : elles s’organisent selon
-des logiques territoriales structurées, que les outils SIG permettent
-aujourd’hui de mettre en évidence avec précision.</p>
-<p>Ce projet analyse les inégalités socio-économiques dans deux villes
-françaises aux profils contrastés : <strong>Bordeaux</strong>, grande
-métropole aquitaine marquée par une forte polarisation sociale interne,
-et <strong>Biarritz</strong>, ville moyenne du littoral basque à forte
-attractivité touristique et résidentielle. En mobilisant des données
-carroyées à haute résolution (200m × 200m) ainsi que des données
-communales financières, ce projet vise à cartographier et comparer les
-dynamiques spatiales d’inégalité dans ces deux territoires.</p>
+<p>Cette page présente les <strong>jointures attributaires</strong>
+réalisées dans le cadre de ce projet. Une jointure attributaire est une
+opération qui consiste à <strong>relier un tableau de données
+socio-économiques à une couche géographique</strong> via un identifiant
+commun, sans modifier la géométrie des entités. Elle constitue le lien
+essentiel entre les données spatiales et les données statistiques,
+rendant possible la cartographie thématique.</p>
+<p>Dans ce projet, la jointure attributaire a été mobilisée pour
+enrichir les contours communaux IGN avec les données financières de
+l’OFGL, afin de produire les couches nécessaires aux géotraitements
+raster.</p>
 <hr />
 </div>
-<div id="problématique" class="section level2">
-<h2>Problématique</h2>
-<blockquote>
-<p><strong>Dans quelle mesure les inégalités socio-économiques se
-structurent-elles selon une logique centre/périphérie à Bordeaux et à
-Biarritz, et comment ces dynamiques varient-elles entre une grande
-métropole et une ville moyenne à vocation touristique ?</strong></p>
-</blockquote>
-<p>Cette problématique repose sur l’hypothèse que la concentration
-spatiale des richesses et de la pauvreté n’est pas identique selon la
-taille et la nature des villes. À Bordeaux, on s’attend à une
-polarisation forte entre un centre aisé et des périphéries défavorisées,
-tandis qu’à Biarritz, la logique touristique et résidentielle pourrait
-produire des configurations spatiales différentes.</p>
+<div id="schéma-de-géotraitement" class="section level2">
+<h2>Schéma de géotraitement</h2>
+<p>La jointure attributaire est visible dans le schéma de géotraitement
+raster ci-dessous : elle correspond à l’étape <code>left_join()</code>
+qui relie les données OFGL aux contours communaux IGN, en amont de la
+rastérisation.</p>
+<p><img src="images/schema_raster.jpg.png" /></p>
+<p><em>Figure 1 — Le schéma de géotraitement raster fait apparaître la
+jointure attributaire (étape <code>left_join()</code>) entre les comptes
+communes OFGL et les contours IGN.</em></p>
 <hr />
 </div>
-<div id="données-mobilisées" class="section level2">
-<h2>Données mobilisées</h2>
-<p>Les analyses reposent sur trois sources de données complémentaires
-:</p>
-<ul>
-<li><strong>Filosofi (INSEE, 2019)</strong> : données carroyées à 200m
-fournissant le revenu médian et la part des ménages sous le seuil de
-pauvreté, indépendamment des découpages administratifs</li>
-<li><strong>Contours des communes (IGN — COGiter)</strong> : limites
-administratives vectorielles utilisées comme couche de référence
-spatiale</li>
-<li><strong>Recettes des communes (OFGL, 2024)</strong> : données
-financières communales permettant d’analyser les ressources fiscales des
-territoires étudiés</li>
-</ul>
-<blockquote>
-<p>La description détaillée de chaque source, leurs formats et leurs
-métadonnées sont disponibles dans l’onglet <strong>Données</strong>.</p>
-</blockquote>
+<div id="principe-de-la-jointure-attributaire" class="section level2">
+<h2>Principe de la jointure attributaire</h2>
+<p>Une jointure attributaire fonctionne sur le même principe qu’une
+jointure SQL : elle met en correspondance deux tables via une
+<strong>clé commune</strong>, ici le <strong>code INSEE
+commune</strong>, présent à la fois dans les données géographiques IGN
+et dans les données tabulaires OFGL.</p>
 <hr />
 </div>
-<div id="territoires-étudiés" class="section level2">
-<h2>Territoires étudiés</h2>
+<div id="jointure-réalisée" class="section level2">
+<h2>Jointure réalisée</h2>
+<div id="ofgl-communes-ign" class="section level3">
+<h3>OFGL × Communes IGN</h3>
 <table>
-<colgroup>
-<col width="21%" />
-<col width="14%" />
-<col width="64%" />
-</colgroup>
 <thead>
 <tr class="header">
-<th>Commune</th>
-<th>Type</th>
-<th>Caractéristique principale</th>
+<th>Paramètre</th>
+<th>Valeur</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Bordeaux</strong></td>
-<td>Grande métropole</td>
-<td>Forte polarisation sociale, dynamique de gentrification</td>
+<td>Table géographique</td>
+<td>Contours communes IGN COGiter</td>
 </tr>
 <tr class="even">
-<td><strong>Biarritz</strong></td>
-<td>Ville moyenne</td>
-<td>Attractivité touristique et résidentielle, littoral</td>
+<td>Table attributaire</td>
+<td>Comptes consolidés des communes (OFGL 2024)</td>
+</tr>
+<tr class="odd">
+<td>Clé commune</td>
+<td>Code INSEE commune</td>
+</tr>
+<tr class="even">
+<td>Type de jointure</td>
+<td><code>left_join()</code></td>
+</tr>
+<tr class="odd">
+<td>Variable jointe</td>
+<td><code>dep_eq_hab</code> (dépenses d’équipement €/hab)</td>
 </tr>
 </tbody>
 </table>
-<p>Ces deux villes ont été retenues pour leur contraste : elles
-représentent deux modalités différentes d’organisation socio-spatiale,
-ce qui permet une comparaison analytique pertinente.</p>
+<pre class="r"><code># Chargement des données OFGL
+ofgl &lt;- read.csv(&quot;data/ofgl_2024.csv&quot;)
+
+# Jointure attributaire : communes IGN × données OFGL
+communes_ofgl &lt;- communes %&gt;%
+  left_join(ofgl, by = c(&quot;INSEE_COM&quot; = &quot;code_insee&quot;))
+
+# Vérification du résultat
+head(communes_ofgl[, c(&quot;INSEE_COM&quot;, &quot;NOM_COM&quot;, &quot;dep_eq_hab&quot;)])</code></pre>
 <hr />
 </div>
-<div id="organisation-du-site" class="section level2">
-<h2>Organisation du site</h2>
-<p>Le site est structuré en cinq onglets :</p>
-<ol style="list-style-type: decimal">
-<li><strong>Données</strong> — description et métadonnées des sources
-utilisées</li>
-<li><strong>Méthodologie SIG</strong> — présentation des géotraitements
-vecteur, raster et jointures</li>
-<li><strong>Analyse de Bordeaux</strong> — cartes et interprétation des
-inégalités à Bordeaux</li>
-<li><strong>Analyse de Biarritz</strong> — cartes et interprétation des
-inégalités à Biarritz</li>
-<li><strong>Comparaison</strong> — mise en regard des deux
-territoires</li>
-</ol>
+</div>
+<div id="pourquoi-un-left_join" class="section level2">
+<h2>Pourquoi un <code>left_join()</code> ?</h2>
+<table style="width:100%;">
+<colgroup>
+<col width="39%" />
+<col width="30%" />
+<col width="30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type de jointure</th>
+<th>Comportement</th>
+<th>Choix retenu</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>left_join()</code></td>
+<td>Conserve toutes les lignes de la table géographique, même sans
+correspondance OFGL</td>
+<td>✅ <strong>Oui</strong></td>
+</tr>
+<tr class="even">
+<td><code>inner_join()</code></td>
+<td>Ne conserve que les lignes présentes dans les deux tables</td>
+<td>❌ Non</td>
+</tr>
+<tr class="odd">
+<td><code>right_join()</code></td>
+<td>Conserve toutes les lignes de la table droite</td>
+<td>❌ Non</td>
+</tr>
+<tr class="even">
+<td><code>full_join()</code></td>
+<td>Conserve toutes les lignes des deux tables</td>
+<td>❌ Non</td>
+</tr>
+</tbody>
+</table>
+<p>Le <code>left_join()</code> garantit qu’<strong>aucune géométrie
+communale n’est perdue</strong> lors de la jointure, même si certaines
+communes sont absentes des données OFGL. Les communes sans données
+financières apparaissent avec des valeurs <code>NA</code>, visibles sur
+la carte, plutôt que supprimées silencieusement.</p>
+<hr />
+</div>
+<div id="place-de-la-jointure-dans-la-chaîne-de-traitement"
+class="section level2">
+<h2>Place de la jointure dans la chaîne de traitement</h2>
+<table>
+<colgroup>
+<col width="29%" />
+<col width="45%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Étape</th>
+<th>Opération</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Chargement des communes IGN</td>
+<td>Vecteur</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Chargement des données OFGL</td>
+<td>Tabulaire</td>
+</tr>
+<tr class="odd">
+<td><strong>3</strong></td>
+<td><strong>Jointure <code>left_join()</code> OFGL ×
+communes</strong></td>
+<td><strong>Jointure attributaire</strong></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Rastérisation des communes enrichies</td>
+<td>Raster</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Superposition avec les carreaux Filosofi</td>
+<td>Raster + Vecteur</td>
+</tr>
+</tbody>
+</table>
+<p>Sans cette jointure, les données OFGL — purement tabulaires — ne
+pourraient pas être représentées cartographiquement.</p>
+<hr />
+</div>
+<div id="limites-et-précautions" class="section level2">
+<h2>Limites et précautions</h2>
+<ul>
+<li><strong>Format de la clé</strong> : le code INSEE peut être stocké
+différemment selon les sources (entier vs chaîne de caractères), ce qui
+peut bloquer la jointure</li>
+<li><strong>Millésimes différents</strong> : les données IGN (2023) et
+OFGL (2024) ne sont pas du même millésime — des fusions de communes
+entre ces dates peuvent entraîner des codes non concordants</li>
+<li><strong>Valeurs manquantes</strong> : les communes sans
+correspondance OFGL génèrent des <code>NA</code> à gérer avant la
+rastérisation</li>
+<li><strong>Double comptage</strong> : si l’OFGL contient plusieurs
+lignes par commune, la jointure peut dupliquer des géométries — un
+filtre préalable est nécessaire</li>
+</ul>
 <hr />
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>Ce projet met en évidence que les inégalités socio-spatiales ne
-suivent pas un modèle unique : si Bordeaux révèle une polarisation
-classique entre un hypercentre aisé et des franges périurbaines
-défavorisées, Biarritz présente une géographie des inégalités plus
-fragmentée, influencée par la pression foncière liée au tourisme et à
-l’attractivité résidentielle du littoral.</p>
-<p>L’utilisation croisée de données carroyées fines (Filosofi 200m) et
-de données communales (OFGL) permet de dépasser les effets de lissage
-des découpages administratifs et de saisir la réalité socio-spatiale à
-une échelle plus proche du vécu des habitants. Ces résultats invitent à
-interroger les politiques publiques de rééquilibrage territorial à
-l’échelle de chaque agglomération.</p>
+<p>La jointure attributaire est une opération fondamentale en SIG :
+simple dans son principe, elle conditionne pourtant la qualité de
+l’ensemble de la chaîne de traitement. Dans ce projet, elle permet de
+faire le lien entre les <strong>géométries communales</strong> et les
+<strong>ressources financières locales</strong>, ouvrant la voie à une
+analyse croisée des inégalités à deux échelles — communale et
+infra-communale — qui constitue le cœur de la démarche comparative entre
+Bordeaux et Biarritz.</p>
 </div>
 
 

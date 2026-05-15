@@ -11,7 +11,7 @@
 
 
 
-<title>Projet SIG — Inégalités socio-spatiales : Bordeaux &amp; Biarritz</title>
+<title>Géotraitements Raster</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,131 +348,143 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Projet SIG — Inégalités socio-spatiales :
-Bordeaux &amp; Biarritz</h1>
+<h1 class="title toc-ignore">Géotraitements Raster</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Les inégalités socio-spatiales constituent l’un des enjeux majeurs de
-la géographie urbaine contemporaine. Dans un contexte de métropolisation
-croissante, les disparités de revenus et d’accès aux ressources ne se
-distribuent pas aléatoirement dans l’espace : elles s’organisent selon
-des logiques territoriales structurées, que les outils SIG permettent
-aujourd’hui de mettre en évidence avec précision.</p>
-<p>Ce projet analyse les inégalités socio-économiques dans deux villes
-françaises aux profils contrastés : <strong>Bordeaux</strong>, grande
-métropole aquitaine marquée par une forte polarisation sociale interne,
-et <strong>Biarritz</strong>, ville moyenne du littoral basque à forte
-attractivité touristique et résidentielle. En mobilisant des données
-carroyées à haute résolution (200m × 200m) ainsi que des données
-communales financières, ce projet vise à cartographier et comparer les
-dynamiques spatiales d’inégalité dans ces deux territoires.</p>
+<p>Cette page présente les géotraitements de type
+<strong>raster</strong> mobilisés dans ce projet.</p>
+<p>Contrairement aux données vecteur qui représentent des entités
+géographiques discrètes, les données raster offrent une lecture continue
+du territoire, adaptée à la superposition multi-échelles.</p>
+<p>Dans ce projet, la rastérisation consiste à convertir les carreaux
+Filosofi (vecteur) en surfaces continues afin de les croiser avec les
+données communales OFGL.</p>
 <hr />
 </div>
-<div id="problématique" class="section level2">
-<h2>Problématique</h2>
-<blockquote>
-<p><strong>Dans quelle mesure les inégalités socio-économiques se
-structurent-elles selon une logique centre/périphérie à Bordeaux et à
-Biarritz, et comment ces dynamiques varient-elles entre une grande
-métropole et une ville moyenne à vocation touristique ?</strong></p>
-</blockquote>
-<p>Cette problématique repose sur l’hypothèse que la concentration
-spatiale des richesses et de la pauvreté n’est pas identique selon la
-taille et la nature des villes. À Bordeaux, on s’attend à une
-polarisation forte entre un centre aisé et des périphéries défavorisées,
-tandis qu’à Biarritz, la logique touristique et résidentielle pourrait
-produire des configurations spatiales différentes.</p>
+<div id="schéma-de-géotraitement-raster" class="section level2">
+<h2>Schéma de géotraitement raster</h2>
+<p><img src="images/schema_raster.jpg.png" /></p>
+<p><em>Figure 1 — Schéma de géotraitement raster : rastérisation des
+carreaux Filosofi et jointure avec les données OFGL.</em></p>
 <hr />
 </div>
-<div id="données-mobilisées" class="section level2">
-<h2>Données mobilisées</h2>
-<p>Les analyses reposent sur trois sources de données complémentaires
-:</p>
-<ul>
-<li><strong>Filosofi (INSEE, 2019)</strong> : données carroyées à 200m
-fournissant le revenu médian et la part des ménages sous le seuil de
-pauvreté, indépendamment des découpages administratifs</li>
-<li><strong>Contours des communes (IGN — COGiter)</strong> : limites
-administratives vectorielles utilisées comme couche de référence
-spatiale</li>
-<li><strong>Recettes des communes (OFGL, 2024)</strong> : données
-financières communales permettant d’analyser les ressources fiscales des
-territoires étudiés</li>
-</ul>
-<blockquote>
-<p>La description détaillée de chaque source, leurs formats et leurs
-métadonnées sont disponibles dans l’onglet <strong>Données</strong>.</p>
-</blockquote>
-<hr />
-</div>
-<div id="territoires-étudiés" class="section level2">
-<h2>Territoires étudiés</h2>
+<div id="carte-raster-1-pauvreté-dépenses-déquipement"
+class="section level2">
+<h2>Carte raster 1 — Pauvreté × Dépenses d’équipement</h2>
+<div id="sources-mobilisées" class="section level3">
+<h3>Sources mobilisées</h3>
 <table>
-<colgroup>
-<col width="21%" />
-<col width="14%" />
-<col width="64%" />
-</colgroup>
 <thead>
 <tr class="header">
-<th>Commune</th>
-<th>Type</th>
-<th>Caractéristique principale</th>
+<th>Couche</th>
+<th>Source</th>
+<th>Variable</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Bordeaux</strong></td>
-<td>Grande métropole</td>
-<td>Forte polarisation sociale, dynamique de gentrification</td>
+<td>Carreaux 200m Filosofi</td>
+<td>INSEE 2019</td>
+<td>Taux de pauvreté</td>
 </tr>
 <tr class="even">
-<td><strong>Biarritz</strong></td>
-<td>Ville moyenne</td>
-<td>Attractivité touristique et résidentielle, littoral</td>
+<td>Communes OFGL</td>
+<td>2024</td>
+<td>Dépenses d’équipement</td>
 </tr>
 </tbody>
 </table>
-<p>Ces deux villes ont été retenues pour leur contraste : elles
-représentent deux modalités différentes d’organisation socio-spatiale,
-ce qui permet une comparaison analytique pertinente.</p>
+</div>
+<div id="conception-cartographique" class="section level3">
+<h3>Conception cartographique</h3>
+<p>Cette carte devait croiser deux niveaux de lecture :</p>
+<ul>
+<li><strong>Carreaux 200m (INSEE)</strong> : taux de pauvreté, rastérisé
+via <code>terra</code></li>
+<li><strong>Communes (OFGL)</strong> : dépenses d’équipement par
+habitant</li>
+</ul>
+<p>L’objectif était de comparer les logiques de concentration de la
+pauvreté avec les politiques d’investissement public local, dans une
+logique de ségrégation socio-spatiale.</p>
+</div>
+<div id="remarque" class="section level3">
+<h3>Remarque</h3>
+<blockquote>
+<p>⚠️ Cette carte n’a pas pu être finalisée en raison de difficultés
+techniques liées à la rastérisation et à la superposition des couches
+(<code>terra::rasterize()</code> et <code>geom_raster()</code>).</p>
+</blockquote>
+<p>La chaîne de traitement est néanmoins présentée dans la partie
+méthodologique.</p>
 <hr />
 </div>
-<div id="organisation-du-site" class="section level2">
-<h2>Organisation du site</h2>
-<p>Le site est structuré en cinq onglets :</p>
-<ol style="list-style-type: decimal">
-<li><strong>Données</strong> — description et métadonnées des sources
-utilisées</li>
-<li><strong>Méthodologie SIG</strong> — présentation des géotraitements
-vecteur, raster et jointures</li>
-<li><strong>Analyse de Bordeaux</strong> — cartes et interprétation des
-inégalités à Bordeaux</li>
-<li><strong>Analyse de Biarritz</strong> — cartes et interprétation des
-inégalités à Biarritz</li>
-<li><strong>Comparaison</strong> — mise en regard des deux
-territoires</li>
-</ol>
+</div>
+<div id="carte-raster-2-logements-sociaux-score-fiscal"
+class="section level2">
+<h2>Carte raster 2 — Logements sociaux × score fiscal</h2>
+<div id="sources-mobilisées-1" class="section level3">
+<h3>Sources mobilisées</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Couche</th>
+<th>Source</th>
+<th>Variable</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Carreaux INSEE</td>
+<td>2019</td>
+<td>Part de logements sociaux</td>
+</tr>
+<tr class="even">
+<td>Communes OFGL</td>
+<td>2024</td>
+<td>Score fiscal composite</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="conception-cartographique-1" class="section level3">
+<h3>Conception cartographique</h3>
+<p>Cette carte devait croiser :</p>
+<ul>
+<li>la concentration de logements sociaux (échelle fine du carreau)</li>
+<li>un indicateur fiscal communal composite</li>
+</ul>
+<p>Elle visait à analyser les formes de double ségrégation : - sociale
+(logement) - et fiscale (capacité d’investissement local)</p>
+</div>
+<div id="remarque-1" class="section level3">
+<h3>Remarque</h3>
+<blockquote>
+<p>⚠️ Cette carte n’a pas pu être produite dans sa version finale.</p>
+</blockquote>
+<p>La variable <code>part_log_soc</code> n’était pas directement
+disponible dans les données Filosofi utilisées et aurait nécessité un
+retraitement supplémentaire.</p>
 <hr />
 </div>
-<div id="conclusion" class="section level2">
-<h2>Conclusion</h2>
-<p>Ce projet met en évidence que les inégalités socio-spatiales ne
-suivent pas un modèle unique : si Bordeaux révèle une polarisation
-classique entre un hypercentre aisé et des franges périurbaines
-défavorisées, Biarritz présente une géographie des inégalités plus
-fragmentée, influencée par la pression foncière liée au tourisme et à
-l’attractivité résidentielle du littoral.</p>
-<p>L’utilisation croisée de données carroyées fines (Filosofi 200m) et
-de données communales (OFGL) permet de dépasser les effets de lissage
-des découpages administratifs et de saisir la réalité socio-spatiale à
-une échelle plus proche du vécu des habitants. Ces résultats invitent à
-interroger les politiques publiques de rééquilibrage territorial à
-l’échelle de chaque agglomération.</p>
+</div>
+<div id="apport-analytique-des-cartes-non-produites"
+class="section level2">
+<h2>Apport analytique des cartes non produites</h2>
+<p>Même si les cartes finales n’ont pas été générées, leur conception
+permet de mettre en évidence :</p>
+<ul>
+<li>l’intérêt d’un croisement multi-échelles (carreaux + communes)</li>
+<li>la logique de ségrégation socio-spatiale</li>
+<li>les limites techniques de la rastérisation sous
+<code>terra</code></li>
+</ul>
+<p>Ces éléments restent essentiels dans la compréhension de la démarche
+SIG globale du projet.</p>
 </div>
 
 

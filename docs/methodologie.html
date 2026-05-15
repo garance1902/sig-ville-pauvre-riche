@@ -11,7 +11,7 @@
 
 
 
-<title>Projet SIG — Inégalités socio-spatiales : Bordeaux &amp; Biarritz</title>
+<title>Méthodologie SIG</title>
 
 <script src="site_libs/header-attrs-2.31/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -348,131 +348,305 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Projet SIG — Inégalités socio-spatiales :
-Bordeaux &amp; Biarritz</h1>
+<h1 class="title toc-ignore">Méthodologie SIG</h1>
 
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Les inégalités socio-spatiales constituent l’un des enjeux majeurs de
-la géographie urbaine contemporaine. Dans un contexte de métropolisation
-croissante, les disparités de revenus et d’accès aux ressources ne se
-distribuent pas aléatoirement dans l’espace : elles s’organisent selon
-des logiques territoriales structurées, que les outils SIG permettent
-aujourd’hui de mettre en évidence avec précision.</p>
-<p>Ce projet analyse les inégalités socio-économiques dans deux villes
-françaises aux profils contrastés : <strong>Bordeaux</strong>, grande
-métropole aquitaine marquée par une forte polarisation sociale interne,
-et <strong>Biarritz</strong>, ville moyenne du littoral basque à forte
-attractivité touristique et résidentielle. En mobilisant des données
-carroyées à haute résolution (200m × 200m) ainsi que des données
-communales financières, ce projet vise à cartographier et comparer les
-dynamiques spatiales d’inégalité dans ces deux territoires.</p>
+<p>Cet onglet présente l’ensemble des traitements SIG réalisés sous
+<strong>R</strong> pour produire les cartes et analyses de ce projet. La
+méthodologie s’articule autour de trois types d’opérations : les
+<strong>géotraitements vecteur</strong>, les <strong>géotraitements
+raster</strong>, et les <strong>jointures attributaires</strong>. Ces
+traitements ont été appliqués de manière identique sur les deux
+territoires étudiés — Bordeaux et Biarritz — afin de garantir la
+comparabilité des résultats.</p>
+<p>Les packages R principalement utilisés sont : <code>sf</code>
+(manipulation de données vectorielles), <code>terra</code> (traitement
+raster), <code>dplyr</code> (manipulation attributaire) et
+<code>ggplot2</code> (cartographie).</p>
 <hr />
 </div>
-<div id="problématique" class="section level2">
-<h2>Problématique</h2>
-<blockquote>
-<p><strong>Dans quelle mesure les inégalités socio-économiques se
-structurent-elles selon une logique centre/périphérie à Bordeaux et à
-Biarritz, et comment ces dynamiques varient-elles entre une grande
-métropole et une ville moyenne à vocation touristique ?</strong></p>
-</blockquote>
-<p>Cette problématique repose sur l’hypothèse que la concentration
-spatiale des richesses et de la pauvreté n’est pas identique selon la
-taille et la nature des villes. À Bordeaux, on s’attend à une
-polarisation forte entre un centre aisé et des périphéries défavorisées,
-tandis qu’à Biarritz, la logique touristique et résidentielle pourrait
-produire des configurations spatiales différentes.</p>
-<hr />
+<div id="géotraitements-vecteur" class="section level2">
+<h2>Géotraitements vecteur</h2>
+<p>Les géotraitements vecteur portent sur des entités géographiques
+discrètes représentées sous forme de <strong>polygones</strong> :
+contours de communes et carreaux INSEE. Ces opérations permettent de
+structurer l’espace d’étude et de calculer les indicateurs
+socio-économiques à représenter.</p>
+<div id="schéma-de-géotraitement-vecteur" class="section level3">
+<h3>Schéma de géotraitement vecteur</h3>
+<p><img src="images/schema_gt.jpg.jpg" /></p>
+<p><em>Schéma de l’enchaînement des géotraitements vecteur, depuis les
+données sources jusqu’aux cartes produites.</em></p>
 </div>
-<div id="données-mobilisées" class="section level2">
-<h2>Données mobilisées</h2>
-<p>Les analyses reposent sur trois sources de données complémentaires
-:</p>
-<ul>
-<li><strong>Filosofi (INSEE, 2019)</strong> : données carroyées à 200m
-fournissant le revenu médian et la part des ménages sous le seuil de
-pauvreté, indépendamment des découpages administratifs</li>
-<li><strong>Contours des communes (IGN — COGiter)</strong> : limites
-administratives vectorielles utilisées comme couche de référence
-spatiale</li>
-<li><strong>Recettes des communes (OFGL, 2024)</strong> : données
-financières communales permettant d’analyser les ressources fiscales des
-territoires étudiés</li>
-</ul>
-<blockquote>
-<p>La description détaillée de chaque source, leurs formats et leurs
-métadonnées sont disponibles dans l’onglet <strong>Données</strong>.</p>
-</blockquote>
-<hr />
-</div>
-<div id="territoires-étudiés" class="section level2">
-<h2>Territoires étudiés</h2>
+<div id="étapes-réalisées" class="section level3">
+<h3>Étapes réalisées</h3>
 <table>
 <colgroup>
-<col width="21%" />
-<col width="14%" />
-<col width="64%" />
+<col width="18%" />
+<col width="28%" />
+<col width="28%" />
+<col width="23%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th>Commune</th>
-<th>Type</th>
-<th>Caractéristique principale</th>
+<th>Étape</th>
+<th>Opération</th>
+<th>Fonction R</th>
+<th>Package</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Bordeaux</strong></td>
-<td>Grande métropole</td>
-<td>Forte polarisation sociale, dynamique de gentrification</td>
+<td>1</td>
+<td>Reprojection en Lambert-93</td>
+<td><code>st_transform(2154)</code></td>
+<td><code>sf</code></td>
 </tr>
 <tr class="even">
-<td><strong>Biarritz</strong></td>
-<td>Ville moyenne</td>
-<td>Attractivité touristique et résidentielle, littoral</td>
+<td>2</td>
+<td>Sélection attributaire des communes</td>
+<td><code>filter(DEPCOM == "33063")</code></td>
+<td><code>dplyr</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Création de la zone tampon (5 km)</td>
+<td><code>st_buffer(commune, 5000)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Intersection spatiale carreaux × buffer</td>
+<td><code>st_intersection(carreaux, buffer)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Calcul des indicateurs</td>
+<td><code>mutate()</code></td>
+<td><code>dplyr</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Discrétisation en classes communes</td>
+<td><code>cut(valeur, breaks, labels)</code></td>
+<td><code>base R</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Cartographie</td>
+<td><code>ggplot2</code> + <code>geom_sf()</code></td>
+<td><code>ggplot2</code></td>
 </tr>
 </tbody>
 </table>
-<p>Ces deux villes ont été retenues pour leur contraste : elles
-représentent deux modalités différentes d’organisation socio-spatiale,
-ce qui permet une comparaison analytique pertinente.</p>
+</div>
+<div id="indicateurs-calculés-à-létape-5" class="section level3">
+<h3>Indicateurs calculés à l’étape 5</h3>
+<pre class="r"><code>carreaux &lt;- carreaux %&gt;%
+  mutate(
+    revenu_moyen  = ind_snv / ind,          # Revenu moyen par individu (€/an)
+    taux_pauvrete = men_pauv / men * 100,   # Part des ménages pauvres (%)
+    densite       = ind / 4                 # Densité (individus/ha, 1 carreau = 4 ha)
+  )</code></pre>
+</div>
+<div id="cartes-produites" class="section level3">
+<h3>Cartes produites</h3>
+<p>Ces géotraitements aboutissent à deux cartes comparatives Bordeaux /
+Biarritz :</p>
+<ul>
+<li><strong>Carte 3</strong> — Revenu médian par carreau (200m)</li>
+<li><strong>Carte 4</strong> — Part des ménages pauvres par carreau
+(200m)</li>
+</ul>
 <hr />
 </div>
-<div id="organisation-du-site" class="section level2">
-<h2>Organisation du site</h2>
-<p>Le site est structuré en cinq onglets :</p>
-<ol style="list-style-type: decimal">
-<li><strong>Données</strong> — description et métadonnées des sources
-utilisées</li>
-<li><strong>Méthodologie SIG</strong> — présentation des géotraitements
-vecteur, raster et jointures</li>
-<li><strong>Analyse de Bordeaux</strong> — cartes et interprétation des
-inégalités à Bordeaux</li>
-<li><strong>Analyse de Biarritz</strong> — cartes et interprétation des
-inégalités à Biarritz</li>
-<li><strong>Comparaison</strong> — mise en regard des deux
-territoires</li>
-</ol>
+</div>
+<div id="géotraitements-raster" class="section level2">
+<h2>Géotraitements raster</h2>
+<p>Les géotraitements raster permettent de <strong>convertir des données
+vectorielles en surface continue</strong> pour les superposer à d’autres
+couches et produire une carte de synthèse. Dans ce projet, les carreaux
+Filosofi (initialement des polygones vecteur) sont rastérisés afin
+d’être combinés avec les données communales OFGL.</p>
+<blockquote>
+<p>⚠️ <strong>Point méthodologique important</strong> : les carreaux
+Filosofi sont fournis en format vecteur (polygones GeoPackage). La
+conversion en raster via <code>terra::rasterize()</code> est une étape
+de traitement choisie pour permettre la superposition avec la couche
+communale et produire une carte de synthèse continue.</p>
+</blockquote>
+<div id="schéma-de-géotraitement-raster" class="section level3">
+<h3>Schéma de géotraitement raster</h3>
+<p><img src="images/schema_raster.jpg.png" /></p>
+<p><em>Schéma de l’enchaînement des géotraitements raster, incluant la
+jointure attributaire et la rastérisation.</em></p>
+</div>
+<div id="étapes-réalisées-1" class="section level3">
+<h3>Étapes réalisées</h3>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="28%" />
+<col width="28%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Étape</th>
+<th>Opération</th>
+<th>Fonction R</th>
+<th>Package</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Reprojection + intersection des carreaux</td>
+<td><code>st_transform()</code> + <code>st_intersection()</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Création zone tampon 5 km</td>
+<td><code>st_buffer(5000)</code></td>
+<td><code>sf</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Jointure OFGL sur les communes</td>
+<td><code>left_join()</code></td>
+<td><code>dplyr</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>Rastérisation</strong> des carreaux</td>
+<td><code>terra::rasterize()</code></td>
+<td><code>terra</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><strong>Rastérisation</strong> des communes OFGL</td>
+<td><code>terra::rasterize()</code></td>
+<td><code>terra</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Superposition raster + vecteur</td>
+<td><code>geom_raster()</code> + <code>geom_sf()</code></td>
+<td><code>ggplot2</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="carte-produite" class="section level3">
+<h3>Carte produite</h3>
+<p>Ce géotraitement aboutit à :</p>
+<ul>
+<li><strong>Carte raster 1</strong> — Taux de pauvreté (carreaux) ×
+Dépenses d’équipement par habitant (communes OFGL)</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="jointures-attributaires" class="section level2">
+<h2>Jointures attributaires</h2>
+<p>La jointure attributaire est l’opération qui permet de <strong>relier
+un tableau de données socio-économiques à une couche
+géographique</strong> via un identifiant commun. Elle ne modifie pas la
+géométrie des entités, mais enrichit leur table attributaire.</p>
+<div id="jointure-réalisée" class="section level3">
+<h3>Jointure réalisée</h3>
+<table>
+<colgroup>
+<col width="29%" />
+<col width="29%" />
+<col width="25%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Couche géographique</th>
+<th>Table attributaire</th>
+<th>Clé de jointure</th>
+<th>Fonction R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Contours communes (IGN)</td>
+<td>Recettes communes (OFGL)</td>
+<td>Code INSEE commune</td>
+<td><code>left_join()</code></td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Jointure entre les géométries communales et les données OFGL
+communes_ofgl &lt;- communes %&gt;%
+  left_join(ofgl, by = c(&quot;INSEE_COM&quot; = &quot;code_insee&quot;))</code></pre>
+</div>
+<div id="pourquoi-un-left_join" class="section level3">
+<h3>Pourquoi un <code>left_join()</code> ?</h3>
+<p>Le <code>left_join()</code> conserve <strong>toutes les communes de
+la couche géographique</strong>, même celles absentes des données OFGL.
+Cela évite de perdre des géométries en cas de données manquantes, et
+permet de visualiser les zones sans information financière.</p>
+<hr />
+</div>
+</div>
+<div id="synthèse-des-traitements" class="section level2">
+<h2>Synthèse des traitements</h2>
+<table>
+<colgroup>
+<col width="17%" />
+<col width="32%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Opérations</th>
+<th>Cartes produites</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Vecteur</strong></td>
+<td>Reprojection, sélection, buffer, intersection, calcul attributaire,
+discrétisation</td>
+<td>Carte 3 (revenu médian), Carte 4 (part ménages pauvres)</td>
+</tr>
+<tr class="even">
+<td><strong>Raster</strong></td>
+<td>Rastérisation, superposition raster/vecteur</td>
+<td>Carte raster 1 (pauvreté × dépenses équipement)</td>
+</tr>
+<tr class="odd">
+<td><strong>Jointure</strong></td>
+<td><code>left_join()</code> OFGL × communes IGN</td>
+<td>Enrichissement attributaire pour carte raster</td>
+</tr>
+</tbody>
+</table>
 <hr />
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>Ce projet met en évidence que les inégalités socio-spatiales ne
-suivent pas un modèle unique : si Bordeaux révèle une polarisation
-classique entre un hypercentre aisé et des franges périurbaines
-défavorisées, Biarritz présente une géographie des inégalités plus
-fragmentée, influencée par la pression foncière liée au tourisme et à
-l’attractivité résidentielle du littoral.</p>
-<p>L’utilisation croisée de données carroyées fines (Filosofi 200m) et
-de données communales (OFGL) permet de dépasser les effets de lissage
-des découpages administratifs et de saisir la réalité socio-spatiale à
-une échelle plus proche du vécu des habitants. Ces résultats invitent à
-interroger les politiques publiques de rééquilibrage territorial à
-l’échelle de chaque agglomération.</p>
+<p>La combinaison de géotraitements vecteur et raster permet
+d’appréhender les inégalités socio-spatiales à différentes échelles et
+sous différentes formes. Les traitements vecteur offrent une précision
+géométrique adaptée à l’analyse carroyée fine, tandis que la
+rastérisation permet une lecture continue et synthétique du territoire.
+Les jointures attributaires constituent le lien essentiel entre les
+données géographiques et les données socio-économiques, rendant possible
+la cartographie thématique.</p>
+<p>L’ensemble de ces traitements a été appliqué de manière symétrique
+sur Bordeaux et Biarritz, garantissant ainsi la comparabilité des
+analyses présentées dans les onglets suivants.</p>
 </div>
 
 
